@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "Chrome Home Dash",
+  "version": "1.0.0",
+  "description": "A custom Chrome home dashboard",
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "chrome_url_overrides": {
+    "newtab": "index.html"
+  },
+  "permissions": []
+}
