@@ -107,8 +107,8 @@ const DEFAULT_THEME: ThemeConfig = {
   colorScheme: THEME_PRESETS[1].colors,
   useCustomColors: false,
   presetId: 'dark',
-  blurIntensity: 20,
-  overlayOpacity: 30,
+  blurIntensity: 0,
+  overlayOpacity: 0,
 };
 
 // Storage Manager
@@ -332,10 +332,12 @@ class App {
     });
 
     resetBtn?.addEventListener('click', async () => {
-      await this.themeManager.resetTheme();
-      this.loadCurrentTheme();
-      this.renderBackgrounds();
-      this.renderThemePresets();
+      if (confirm('Are you sure you want to reset all settings to default?')) {
+        await this.themeManager.resetTheme();
+        this.renderBackgrounds();
+        this.renderThemePresets();
+        this.loadCurrentTheme();
+      }
     });
 
     addCustomBg?.addEventListener('click', () => this.addCustomBackground());
