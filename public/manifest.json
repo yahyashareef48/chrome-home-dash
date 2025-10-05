@@ -7,6 +7,11 @@
     "newtab": "index.html"
   },
   "permissions": [
-    "storage"
+    "storage",
+    "unlimitedStorage"
+  ],
+  "host_permissions": [
+    "https://api.unsplash.com/*",
+    "https://images.unsplash.com/*"
   ]
 }

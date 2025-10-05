@@ -421,6 +421,316 @@ body {
   transform: translateY(0);
 }
 
+/* Photo Credit Badge */
+.photo-credit {
+  position: absolute;
+  bottom: 4px;
+  left: 4px;
+  right: 4px;
+  padding: 4px 8px;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  border-radius: 6px;
+  font-size: 10px;
+  color: white;
+  opacity: 0;
+  transition: opacity 0.3s var(--transition-smooth);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bg-option:hover .photo-credit {
+  opacity: 1;
+}
+
+/* Delete Button for Background Images */
+.delete-bg-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: rgba(255, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.3s var(--transition-smooth);
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+  z-index: 10;
+}
+
+.bg-option:hover .delete-bg-btn {
+  opacity: 1;
+}
+
+.delete-bg-btn:hover {
+  background: rgba(255, 0, 0, 1);
+  transform: scale(1.1);
+}
+
+/* Unsplash Modal */
+.unsplash-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(20px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s var(--transition-smooth);
+}
+
+.unsplash-modal.open {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.unsplash-modal-content {
+  background: var(--color-background);
+  backdrop-filter: blur(40px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  width: 90%;
+  max-width: 1200px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transform: scale(0.9);
+  transition: transform 0.3s var(--transition-spring);
+}
+
+.unsplash-modal.open .unsplash-modal-content {
+  transform: scale(1);
+}
+
+.unsplash-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.unsplash-modal-header h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.close-modal-btn {
+  background: none;
+  border: none;
+  color: var(--color-text);
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s var(--transition-smooth);
+}
+
+.close-modal-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.unsplash-search-bar {
+  display: flex;
+  gap: 0.75rem;
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.unsplash-search-bar input {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-sm);
+  color: var(--color-text);
+  font-size: 1rem;
+  transition: all 0.3s var(--transition-smooth);
+}
+
+.unsplash-search-bar input:focus {
+  outline: none;
+  background: rgba(255, 255, 255, 0.15);
+  border-color: var(--color-primary);
+}
+
+.unsplash-search-bar input::placeholder {
+  color: var(--color-text-secondary);
+}
+
+.unsplash-search-bar button {
+  padding: 0.75rem 1.5rem;
+  background: var(--color-primary);
+  border: none;
+  border-radius: var(--radius-sm);
+  color: white;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s var(--transition-smooth);
+}
+
+.unsplash-search-bar button:hover {
+  background: var(--color-secondary);
+  transform: translateY(-2px);
+}
+
+.unsplash-search-bar button:active {
+  transform: translateY(0);
+}
+
+.unsplash-results {
+  flex: 1;
+  overflow-y: auto;
+  padding: 2rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+  align-content: start;
+  grid-auto-rows: minmax(150px, auto);
+}
+
+.unsplash-photo {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 150px;
+  border-radius: var(--radius-md);
+  background-size: cover;
+  background-position: center;
+  cursor: pointer;
+  overflow: hidden;
+  transition: all 0.3s var(--transition-smooth);
+  border: 2px solid transparent;
+}
+
+.unsplash-photo:hover {
+  transform: scale(1.02);
+  border-color: var(--color-primary);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  z-index: 10;
+}
+
+.unsplash-photo.downloading {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.unsplash-photo.downloading::after {
+  content: 'Downloading...';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.8);
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-sm);
+  color: white;
+  font-size: 0.875rem;
+}
+
+.unsplash-attribution {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 0.75rem;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+  color: white;
+  font-size: 0.75rem;
+  opacity: 0;
+  transition: opacity 0.3s var(--transition-smooth);
+}
+
+.unsplash-photo:hover .unsplash-attribution {
+  opacity: 1;
+}
+
+.unsplash-attribution a {
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.unsplash-attribution a:hover {
+  text-decoration: underline;
+}
+
+.unsplash-footer {
+  padding: 1rem 2rem;
+  text-align: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+}
+
+.unsplash-footer a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.unsplash-footer a:hover {
+  text-decoration: underline;
+}
+
+.loading,
+.no-results {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 3rem;
+  color: var(--color-text-secondary);
+  font-size: 1.125rem;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-sm);
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: center;
+  transition: all 0.3s var(--transition-smooth);
+  box-shadow: var(--shadow-sm);
+  width: 100%;
+  margin-bottom: 0.75rem;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .settings-panel {
@@ -434,5 +744,45 @@ body {
 
   .clock {
     padding: 2rem 3rem;
+  }
+
+  .unsplash-results {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 0.75rem;
+    padding: 1rem;
+  }
+
+  .unsplash-modal-content {
+    width: 100%;
+    height: 100vh;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+
+  .unsplash-modal-header {
+    padding: 1rem;
+  }
+
+  .unsplash-modal-header h3 {
+    font-size: 1.25rem;
+  }
+
+  .unsplash-search-bar {
+    flex-direction: column;
+    padding: 1rem;
+  }
+
+  .unsplash-search-bar button {
+    width: 100%;
+  }
+
+  .unsplash-results {
+    grid-template-columns: repeat(2, 1fr);
+    padding: 1rem;
+    gap: 0.75rem;
+  }
+
+  .unsplash-photo {
+    min-height: 120px;
   }
 }
