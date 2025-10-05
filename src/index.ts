@@ -6,6 +6,7 @@ interface BackgroundImage {
   isCustom: boolean;
   photographer?: string;
   photographerUrl?: string;
+  position?: string; // CSS background-position value (e.g., "center", "top", "50% 30%")
 }
 
 interface UnsplashPhoto {
@@ -323,6 +324,7 @@ class ThemeManager {
     if (!this.backgroundElement) return;
 
     this.backgroundElement.style.backgroundImage = `url('${image.url}')`;
+    this.backgroundElement.style.backgroundPosition = image.position || "center";
     this.backgroundElement.style.opacity = "0";
 
     setTimeout(() => {
@@ -484,6 +486,10 @@ class App {
     // Unsplash button
     const unsplashBtn = document.getElementById("browseUnsplash");
     unsplashBtn?.addEventListener("click", () => this.loadRandomUnsplash());
+
+    // Adjust position button
+    const adjustPositionBtn = document.getElementById("adjustPosition");
+    adjustPositionBtn?.addEventListener("click", () => this.showPositionAdjuster());
   }
 
   toggleSettings() {
@@ -821,6 +827,108 @@ class App {
   closeUnsplashModal() {
     const modal = document.getElementById("unsplashModal");
     modal?.classList.remove("open");
+  }
+
+  showPositionAdjuster() {
+    const currentTheme = this.themeManager.getCurrentTheme();
+    if (!currentTheme) return;
+
+    const bgElement = document.getElementById("background");
+    if (!bgElement) return;
+
+    // Create overlay
+    const overlay = document.createElement("div");
+    overlay.className = "position-adjuster-overlay";
+    overlay.innerHTML = `
+      <div class="position-adjuster-content">
+        <h3>Adjust Background Position</h3>
+        <p>Click and drag to position the image</p>
+        <div class="position-preview" id="positionPreview"></div>
+        <div class="position-presets">
+          <button data-pos="center">Center</button>
+          <button data-pos="top">Top</button>
+          <button data-pos="bottom">Bottom</button>
+          <button data-pos="left">Left</button>
+          <button data-pos="right">Right</button>
+          <button data-pos="top left">Top Left</button>
+          <button data-pos="top right">Top Right</button>
+          <button data-pos="bottom left">Bottom Left</button>
+          <button data-pos="bottom right">Bottom Right</button>
+        </div>
+        <div class="position-adjuster-actions">
+          <button class="btn-primary" id="savePosition">Save</button>
+          <button class="btn-secondary" id="cancelPosition">Cancel</button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    const preview = overlay.querySelector("#positionPreview") as HTMLElement;
+    if (preview) {
+      preview.style.backgroundImage = bgElement.style.backgroundImage;
+      preview.style.backgroundPosition = currentTheme.backgroundImage.position || "center";
+    }
+
+    let isDragging = false;
+    let currentPosition = currentTheme.backgroundImage.position || "center";
+
+    // Preset buttons
+    overlay.querySelectorAll(".position-presets button").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const pos = (btn as HTMLElement).dataset.pos || "center";
+        currentPosition = pos;
+        if (preview) preview.style.backgroundPosition = pos;
+      });
+    });
+
+    // Drag to position
+    preview?.addEventListener("mousedown", () => {
+      isDragging = true;
+    });
+
+    preview?.addEventListener("mousemove", (e) => {
+      if (!isDragging) return;
+      const rect = preview.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width) * 100;
+      const y = ((e.clientY - rect.top) / rect.height) * 100;
+      currentPosition = `${x.toFixed(1)}% ${y.toFixed(1)}%`;
+      preview.style.backgroundPosition = currentPosition;
+    });
+
+    document.addEventListener("mouseup", () => {
+      isDragging = false;
+    });
+
+    // Save button
+    overlay.querySelector("#savePosition")?.addEventListener("click", async () => {
+      const updatedImage = { ...currentTheme.backgroundImage, position: currentPosition };
+      await this.themeManager.updateBackground(updatedImage);
+
+      // Update in storage if it's an Unsplash image
+      if (updatedImage.id.startsWith("unsplash-")) {
+        const images = await ThemeStorage.getUnsplashImages();
+        const index = images.findIndex((img) => img.id === updatedImage.id);
+        if (index !== -1) {
+          images[index].position = currentPosition;
+          await chrome.storage.local.set({ unsplashImages: images });
+        }
+      }
+
+      overlay.remove();
+    });
+
+    // Cancel button
+    overlay.querySelector("#cancelPosition")?.addEventListener("click", () => {
+      overlay.remove();
+    });
+
+    // Click outside to close
+    overlay.addEventListener("click", (e) => {
+      if (e.target === overlay) {
+        overlay.remove();
+      }
+    });
   }
 }
 
