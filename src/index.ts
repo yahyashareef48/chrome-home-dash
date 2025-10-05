@@ -200,6 +200,7 @@ class UnsplashAPI {
 class ThemeStorage {
   private static STORAGE_KEY = "themeConfig";
   private static UNSPLASH_IMAGES_KEY = "unsplashImages";
+  private static CUSTOM_IMAGES_KEY = "customImages";
 
   static async load(): Promise<ThemeConfig> {
     try {
@@ -288,6 +289,43 @@ class ThemeStorage {
       await chrome.storage.local.set({ [this.UNSPLASH_IMAGES_KEY]: filteredImages });
     } catch (error) {
       console.error("Error deleting Unsplash image:", error);
+    }
+  }
+
+  static async saveCustomImage(image: BackgroundImage): Promise<void> {
+    try {
+      const result = await chrome.storage.local.get(this.CUSTOM_IMAGES_KEY);
+      const images = result[this.CUSTOM_IMAGES_KEY] || [];
+
+      // Check if image already exists
+      const exists = images.some((img: BackgroundImage) => img.id === image.id);
+      if (!exists) {
+        images.push(image);
+        await chrome.storage.local.set({ [this.CUSTOM_IMAGES_KEY]: images });
+      }
+    } catch (error) {
+      console.error("Error saving custom image:", error);
+    }
+  }
+
+  static async getCustomImages(): Promise<BackgroundImage[]> {
+    try {
+      const result = await chrome.storage.local.get(this.CUSTOM_IMAGES_KEY);
+      return result[this.CUSTOM_IMAGES_KEY] || [];
+    } catch (error) {
+      console.error("Error loading custom images:", error);
+      return [];
+    }
+  }
+
+  static async deleteCustomImage(imageId: string): Promise<void> {
+    try {
+      const result = await chrome.storage.local.get(this.CUSTOM_IMAGES_KEY);
+      const images = result[this.CUSTOM_IMAGES_KEY] || [];
+      const filteredImages = images.filter((img: BackgroundImage) => img.id !== imageId);
+      await chrome.storage.local.set({ [this.CUSTOM_IMAGES_KEY]: filteredImages });
+    } catch (error) {
+      console.error("Error deleting custom image:", error);
     }
   }
 }
@@ -405,6 +443,7 @@ class App {
   private settingsPanel: HTMLElement | null;
   private isSettingsOpen = false;
   private unsplashImages: BackgroundImage[] = [];
+  private customImages: BackgroundImage[] = [];
   private isLoadingUnsplash = false;
 
   constructor() {
@@ -416,6 +455,7 @@ class App {
   async init() {
     await this.themeManager.init();
     this.unsplashImages = await ThemeStorage.getUnsplashImages();
+    this.customImages = await ThemeStorage.getCustomImages();
 
     this.setupClock();
     this.setupSettings();
@@ -523,18 +563,18 @@ class App {
       grid.appendChild(option);
     });
 
-    // Show current custom image if it exists
-    if (currentTheme?.backgroundImage.isCustom &&
-        !currentTheme.backgroundImage.photographer &&
-        !this.unsplashImages.some(img => img.id === currentTheme.backgroundImage.id)) {
-      const customImage = currentTheme.backgroundImage;
+    // Custom uploaded images
+    this.customImages.forEach((image) => {
       const option = document.createElement("div");
       option.className = "bg-option";
-      option.style.backgroundImage = `url('${customImage.url}')`;
-      option.dataset.imageId = customImage.id;
-      option.classList.add("active");
+      option.style.backgroundImage = `url('${image.url}')`;
+      option.dataset.imageId = image.id;
 
-      // Add delete button for custom image
+      if (currentTheme?.backgroundImage.id === image.id) {
+        option.classList.add("active");
+      }
+
+      // Add delete button
       const deleteBtn = document.createElement("button");
       deleteBtn.className = "delete-bg-btn";
       deleteBtn.innerHTML = "×";
@@ -542,24 +582,24 @@ class App {
       deleteBtn.addEventListener("click", async (e) => {
         e.stopPropagation();
         if (confirm("Delete this image?")) {
-          await this.themeManager.updateBackground(DEFAULT_IMAGES[0]);
-          this.renderBackgrounds();
+          await this.deleteCustomImage(image.id);
         }
       });
       option.appendChild(deleteBtn);
 
+      // Add custom badge
       const badge = document.createElement("div");
       badge.className = "photo-credit";
       badge.textContent = "Custom";
       option.appendChild(badge);
 
       option.addEventListener("click", () => {
-        this.themeManager.updateBackground(customImage);
+        this.themeManager.updateBackground(image);
         this.renderBackgrounds();
       });
 
       grid.appendChild(option);
-    }
+    });
 
     // Unsplash saved images
     this.unsplashImages.forEach((image) => {
@@ -668,6 +708,11 @@ class App {
           isCustom: true,
         };
 
+        // Save to storage
+        await ThemeStorage.saveCustomImage(customImage);
+        this.customImages = await ThemeStorage.getCustomImages();
+
+        // Set as background
         await this.themeManager.updateBackground(customImage);
         this.renderBackgrounds();
       };
@@ -676,6 +721,19 @@ class App {
     });
 
     input.click();
+  }
+
+  async deleteCustomImage(imageId: string) {
+    await ThemeStorage.deleteCustomImage(imageId);
+    this.customImages = await ThemeStorage.getCustomImages();
+
+    // If deleted image was active, switch to default
+    const currentTheme = this.themeManager.getCurrentTheme();
+    if (currentTheme?.backgroundImage.id === imageId) {
+      await this.themeManager.updateBackground(DEFAULT_IMAGES[0]);
+    }
+
+    this.renderBackgrounds();
   }
 
   async deleteUnsplashImage(imageId: string) {
