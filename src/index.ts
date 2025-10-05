@@ -523,6 +523,44 @@ class App {
       grid.appendChild(option);
     });
 
+    // Show current custom image if it exists
+    if (currentTheme?.backgroundImage.isCustom &&
+        !currentTheme.backgroundImage.photographer &&
+        !this.unsplashImages.some(img => img.id === currentTheme.backgroundImage.id)) {
+      const customImage = currentTheme.backgroundImage;
+      const option = document.createElement("div");
+      option.className = "bg-option";
+      option.style.backgroundImage = `url('${customImage.url}')`;
+      option.dataset.imageId = customImage.id;
+      option.classList.add("active");
+
+      // Add delete button for custom image
+      const deleteBtn = document.createElement("button");
+      deleteBtn.className = "delete-bg-btn";
+      deleteBtn.innerHTML = "×";
+      deleteBtn.title = "Delete image";
+      deleteBtn.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        if (confirm("Delete this image?")) {
+          await this.themeManager.updateBackground(DEFAULT_IMAGES[0]);
+          this.renderBackgrounds();
+        }
+      });
+      option.appendChild(deleteBtn);
+
+      const badge = document.createElement("div");
+      badge.className = "photo-credit";
+      badge.textContent = "Custom";
+      option.appendChild(badge);
+
+      option.addEventListener("click", () => {
+        this.themeManager.updateBackground(customImage);
+        this.renderBackgrounds();
+      });
+
+      grid.appendChild(option);
+    }
+
     // Unsplash saved images
     this.unsplashImages.forEach((image) => {
       const option = document.createElement("div");
