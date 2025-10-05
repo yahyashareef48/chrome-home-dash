@@ -3,13 +3,91 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chrome Home Dash</title>
+  <title>New Tab</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <!-- Background Layer -->
+  <div id="background" class="background"></div>
+  <div id="overlay" class="overlay"></div>
+
+  <!-- Main Content -->
   <div class="container">
-    <h1>Hello World</h1>
+    <div class="content">
+      <div class="clock">
+        <div id="time" class="time">00:00</div>
+        <div id="date" class="date">Loading...</div>
+      </div>
+    </div>
   </div>
-  <script src="script.js"></script>
+
+  <!-- Settings Toggle Button -->
+  <button id="settingsToggle" class="settings-toggle" aria-label="Settings">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="3"></circle>
+      <path d="M12 1v6m0 6v6m-6-6h6m6 0h-6"></path>
+      <path d="M4.2 4.2l4.3 4.3m7 7l4.3 4.3M4.2 19.8l4.3-4.3m7-7l4.3-4.3"></path>
+    </svg>
+  </button>
+
+  <!-- Settings Panel -->
+  <div id="settingsPanel" class="settings-panel">
+    <div class="settings-header">
+      <h2>Settings</h2>
+      <button id="closeSettings" class="close-btn" aria-label="Close">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <div class="settings-content">
+      <!-- Background Section -->
+      <div class="settings-section">
+        <h3>Background</h3>
+        <div id="backgroundGrid" class="background-grid">
+          <!-- Background images will be populated here -->
+        </div>
+        <button id="addCustomBg" class="btn-secondary">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          Add Custom Image
+        </button>
+      </div>
+
+      <!-- Theme Section -->
+      <div class="settings-section">
+        <h3>Theme</h3>
+        <div id="themePresets" class="theme-presets">
+          <!-- Theme presets will be populated here -->
+        </div>
+      </div>
+
+      <!-- Appearance Section -->
+      <div class="settings-section">
+        <h3>Appearance</h3>
+
+        <div class="control-group">
+          <label for="blurSlider">Blur Intensity</label>
+          <input type="range" id="blurSlider" min="0" max="100" value="20" class="slider">
+        </div>
+
+        <div class="control-group">
+          <label for="overlaySlider">Overlay Opacity</label>
+          <input type="range" id="overlaySlider" min="0" max="100" value="30" class="slider">
+        </div>
+      </div>
+
+      <!-- Reset Section -->
+      <div class="settings-section">
+        <button id="resetTheme" class="btn-danger">Reset to Default</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="index.js"></script>
 </body>
 </html>

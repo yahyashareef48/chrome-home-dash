@@ -2,9 +2,11 @@
   "manifest_version": 3,
   "name": "Chrome Home Dash",
   "version": "1.0.0",
-  "description": "A custom Chrome home dashboard",
+  "description": "A beautiful iOS-inspired new tab experience with customizable themes and backgrounds",
   "chrome_url_overrides": {
     "newtab": "index.html"
   },
-  "permissions": []
+  "permissions": [
+    "storage"
+  ]
 }
