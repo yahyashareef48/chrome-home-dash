@@ -113,11 +113,12 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.375rem;
-  margin: 0.75rem;
-  width: 68px;
-  height: 68px;
-  border-radius: 14px;
+  gap: 0.3rem;
+  margin: 0;
+  padding: 0.625rem;
+  width: 60px;
+  height: 60px;
+  border-radius: 0;
   cursor: pointer;
   position: relative;
   transition: all 0.2s var(--transition-smooth);
@@ -127,22 +128,21 @@ body {
 
 .shortcut-item:hover {
   background: rgba(255, 255, 255, 0.12);
-  transform: translateY(-3px);
 }
 
 .shortcut-item:active {
-  transform: translateY(-1px);
+  transform: scale(0.95);
 }
 
 .shortcut-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
   object-fit: contain;
 }
 
 .shortcut-name {
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   font-weight: 500;
   color: var(--color-text);
   text-align: center;
@@ -241,10 +241,11 @@ body {
 }
 
 .island-action-btn {
-  width: 68px;
-  height: 68px;
-  margin: 0.75rem;
-  border-radius: 14px;
+  width: 60px;
+  height: 60px;
+  margin: 0;
+  padding: 0.625rem;
+  border-radius: 0;
   border: none;
   background: transparent;
   color: var(--color-text);
@@ -257,17 +258,16 @@ body {
 }
 
 .island-action-btn svg {
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
 }
 
 .island-action-btn:hover {
   background: rgba(255, 255, 255, 0.12);
-  transform: translateY(-3px);
 }
 
 .island-action-btn:active {
-  transform: translateY(-1px);
+  transform: scale(0.95);
 }
 
 .island-action-btn.active {
