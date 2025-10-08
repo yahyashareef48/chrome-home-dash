@@ -9,6 +9,13 @@ interface BackgroundImage {
   position?: string; // CSS background-position value (e.g., "center", "top", "50% 30%")
 }
 
+interface Shortcut {
+  id: string;
+  name: string;
+  url: string;
+  icon?: string; // URL to favicon or custom icon
+}
+
 interface UnsplashPhoto {
   id: string;
   urls: {
@@ -196,11 +203,40 @@ class UnsplashAPI {
   }
 }
 
+// Default Shortcuts
+const DEFAULT_SHORTCUTS: Shortcut[] = [
+  {
+    id: "google",
+    name: "Google",
+    url: "https://www.google.com",
+    icon: "https://www.google.com/favicon.ico",
+  },
+  {
+    id: "youtube",
+    name: "YouTube",
+    url: "https://www.youtube.com",
+    icon: "https://www.youtube.com/favicon.ico",
+  },
+  {
+    id: "gmail",
+    name: "Gmail",
+    url: "https://mail.google.com",
+    icon: "https://mail.google.com/favicon.ico",
+  },
+  {
+    id: "github",
+    name: "GitHub",
+    url: "https://github.com",
+    icon: "https://github.com/favicon.ico",
+  },
+];
+
 // Storage Manager
 class ThemeStorage {
   private static STORAGE_KEY = "themeConfig";
   private static UNSPLASH_IMAGES_KEY = "unsplashImages";
   private static CUSTOM_IMAGES_KEY = "customImages";
+  private static SHORTCUTS_KEY = "shortcuts";
 
   static async load(): Promise<ThemeConfig> {
     try {
@@ -328,6 +364,257 @@ class ThemeStorage {
       console.error("Error deleting custom image:", error);
     }
   }
+
+  static async getShortcuts(): Promise<Shortcut[]> {
+    try {
+      const result = await chrome.storage.local.get(this.SHORTCUTS_KEY);
+      return result[this.SHORTCUTS_KEY] || DEFAULT_SHORTCUTS;
+    } catch (error) {
+      console.error("Error loading shortcuts:", error);
+      return DEFAULT_SHORTCUTS;
+    }
+  }
+
+  static async saveShortcuts(shortcuts: Shortcut[]): Promise<void> {
+    try {
+      await chrome.storage.local.set({ [this.SHORTCUTS_KEY]: shortcuts });
+    } catch (error) {
+      console.error("Error saving shortcuts:", error);
+    }
+  }
+
+  static async addShortcut(shortcut: Shortcut): Promise<void> {
+    try {
+      const shortcuts = await this.getShortcuts();
+      shortcuts.push(shortcut);
+      await this.saveShortcuts(shortcuts);
+    } catch (error) {
+      console.error("Error adding shortcut:", error);
+    }
+  }
+
+  static async updateShortcut(shortcut: Shortcut): Promise<void> {
+    try {
+      const shortcuts = await this.getShortcuts();
+      const index = shortcuts.findIndex((s) => s.id === shortcut.id);
+      if (index !== -1) {
+        shortcuts[index] = shortcut;
+        await this.saveShortcuts(shortcuts);
+      }
+    } catch (error) {
+      console.error("Error updating shortcut:", error);
+    }
+  }
+
+  static async deleteShortcut(shortcutId: string): Promise<void> {
+    try {
+      const shortcuts = await this.getShortcuts();
+      const filteredShortcuts = shortcuts.filter((s) => s.id !== shortcutId);
+      await this.saveShortcuts(filteredShortcuts);
+    } catch (error) {
+      console.error("Error deleting shortcut:", error);
+    }
+  }
+}
+
+// Shortcuts Manager
+class ShortcutsManager {
+  private shortcuts: Shortcut[] = [];
+  private gridElement: HTMLElement | null = null;
+  private modalElement: HTMLElement | null = null;
+  private formElement: HTMLFormElement | null = null;
+  private editingShortcutId: string | null = null;
+
+  constructor() {
+    this.gridElement = document.getElementById("shortcutsGrid");
+    this.modalElement = document.getElementById("shortcutModal");
+    this.formElement = document.getElementById("shortcutForm") as HTMLFormElement;
+  }
+
+  async init(): Promise<void> {
+    this.shortcuts = await ThemeStorage.getShortcuts();
+    this.render();
+    this.setupEventListeners();
+  }
+
+  private setupEventListeners(): void {
+    const addBtn = document.getElementById("addShortcutBtn");
+    const closeBtn = document.getElementById("closeShortcutModal");
+    const cancelBtn = document.getElementById("cancelShortcut");
+
+    addBtn?.addEventListener("click", () => this.showModal());
+    closeBtn?.addEventListener("click", () => this.hideModal());
+    cancelBtn?.addEventListener("click", () => this.hideModal());
+
+    this.modalElement?.addEventListener("click", (e) => {
+      if (e.target === this.modalElement) {
+        this.hideModal();
+      }
+    });
+
+    this.formElement?.addEventListener("submit", (e) => {
+      e.preventDefault();
+      this.handleSubmit();
+    });
+  }
+
+  private render(): void {
+    if (!this.gridElement) return;
+
+    this.gridElement.innerHTML = "";
+
+    this.shortcuts.forEach((shortcut) => {
+      const item = document.createElement("div");
+      item.className = "shortcut-item";
+      item.dataset.shortcutId = shortcut.id;
+
+      // Create icon
+      const icon = document.createElement("img");
+      icon.className = "shortcut-icon";
+      icon.src = shortcut.icon || this.getFaviconUrl(shortcut.url);
+      icon.alt = shortcut.name;
+      icon.onerror = () => {
+        // Fallback to first letter if favicon fails
+        icon.style.display = "none";
+        const fallback = document.createElement("div");
+        fallback.style.cssText = `
+          width: 32px;
+          height: 32px;
+          background: var(--color-primary);
+          border-radius: 8px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1.25rem;
+          font-weight: 600;
+          color: white;
+          margin-bottom: 0.25rem;
+        `;
+        fallback.textContent = shortcut.name.charAt(0).toUpperCase();
+        item.insertBefore(fallback, icon);
+      };
+
+      // Create name
+      const name = document.createElement("div");
+      name.className = "shortcut-name";
+      name.textContent = shortcut.name;
+      name.title = shortcut.name;
+
+      // Create delete button
+      const deleteBtn = document.createElement("button");
+      deleteBtn.className = "shortcut-delete-btn";
+      deleteBtn.innerHTML = "×";
+      deleteBtn.title = "Delete shortcut";
+      deleteBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        this.deleteShortcut(shortcut.id);
+      });
+
+      // Add click handler to open URL
+      item.addEventListener("click", () => {
+        window.open(shortcut.url, "_blank");
+      });
+
+      // Right click to edit
+      item.addEventListener("contextmenu", (e) => {
+        e.preventDefault();
+        this.editShortcut(shortcut);
+      });
+
+      item.appendChild(icon);
+      item.appendChild(name);
+      item.appendChild(deleteBtn);
+      this.gridElement?.appendChild(item);
+    });
+  }
+
+  private getFaviconUrl(url: string): string {
+    try {
+      const domain = new URL(url);
+      return `https://www.google.com/s2/favicons?domain=${domain.hostname}&sz=64`;
+    } catch {
+      return "";
+    }
+  }
+
+  private showModal(shortcut?: Shortcut): void {
+    if (!this.modalElement || !this.formElement) return;
+
+    const titleElement = document.getElementById("shortcutModalTitle");
+    const nameInput = document.getElementById("shortcutName") as HTMLInputElement;
+    const urlInput = document.getElementById("shortcutUrl") as HTMLInputElement;
+    const iconInput = document.getElementById("shortcutIcon") as HTMLInputElement;
+
+    if (shortcut) {
+      // Edit mode
+      this.editingShortcutId = shortcut.id;
+      if (titleElement) titleElement.textContent = "Edit Shortcut";
+      nameInput.value = shortcut.name;
+      urlInput.value = shortcut.url;
+      iconInput.value = shortcut.icon || "";
+    } else {
+      // Add mode
+      this.editingShortcutId = null;
+      if (titleElement) titleElement.textContent = "Add Shortcut";
+      this.formElement.reset();
+    }
+
+    this.modalElement.classList.add("open");
+  }
+
+  private hideModal(): void {
+    this.modalElement?.classList.remove("open");
+    this.formElement?.reset();
+    this.editingShortcutId = null;
+  }
+
+  private async handleSubmit(): Promise<void> {
+    const nameInput = document.getElementById("shortcutName") as HTMLInputElement;
+    const urlInput = document.getElementById("shortcutUrl") as HTMLInputElement;
+    const iconInput = document.getElementById("shortcutIcon") as HTMLInputElement;
+
+    const name = nameInput.value.trim();
+    let url = urlInput.value.trim();
+    const icon = iconInput.value.trim();
+
+    if (!name || !url) return;
+
+    // Add https:// if no protocol specified
+    if (!url.match(/^https?:\/\//i)) {
+      url = "https://" + url;
+    }
+
+    const shortcut: Shortcut = {
+      id: this.editingShortcutId || `shortcut-${Date.now()}`,
+      name,
+      url,
+      icon: icon || undefined,
+    };
+
+    if (this.editingShortcutId) {
+      // Update existing
+      await ThemeStorage.updateShortcut(shortcut);
+    } else {
+      // Add new
+      await ThemeStorage.addShortcut(shortcut);
+    }
+
+    this.shortcuts = await ThemeStorage.getShortcuts();
+    this.render();
+    this.hideModal();
+  }
+
+  private editShortcut(shortcut: Shortcut): void {
+    this.showModal(shortcut);
+  }
+
+  private async deleteShortcut(id: string): Promise<void> {
+    if (!confirm("Delete this shortcut?")) return;
+
+    await ThemeStorage.deleteShortcut(id);
+    this.shortcuts = await ThemeStorage.getShortcuts();
+    this.render();
+  }
 }
 
 // Theme Manager
@@ -440,6 +727,7 @@ class ThemeManager {
 // Main App
 class App {
   private themeManager: ThemeManager;
+  private shortcutsManager: ShortcutsManager;
   private settingsPanel: HTMLElement | null;
   private isSettingsOpen = false;
   private unsplashImages: BackgroundImage[] = [];
@@ -448,47 +736,21 @@ class App {
 
   constructor() {
     this.themeManager = new ThemeManager();
+    this.shortcutsManager = new ShortcutsManager();
     this.settingsPanel = document.getElementById("settingsPanel");
     this.init();
   }
 
   async init() {
     await this.themeManager.init();
+    await this.shortcutsManager.init();
     this.unsplashImages = await ThemeStorage.getUnsplashImages();
     this.customImages = await ThemeStorage.getCustomImages();
 
-    this.setupClock();
     this.setupSettings();
     this.renderBackgrounds();
     this.renderThemePresets();
     this.loadCurrentTheme();
-  }
-
-  setupClock() {
-    const updateClock = () => {
-      const now = new Date();
-      const timeElement = document.getElementById("time");
-      const dateElement = document.getElementById("date");
-
-      if (timeElement) {
-        const hours = now.getHours().toString().padStart(2, "0");
-        const minutes = now.getMinutes().toString().padStart(2, "0");
-        timeElement.textContent = `${hours}:${minutes}`;
-      }
-
-      if (dateElement) {
-        const options: Intl.DateTimeFormatOptions = {
-          weekday: "long",
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        };
-        dateElement.textContent = now.toLocaleDateString("en-US", options);
-      }
-    };
-
-    updateClock();
-    setInterval(updateClock, 1000);
   }
 
   setupSettings() {

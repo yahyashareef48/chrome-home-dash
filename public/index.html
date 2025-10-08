@@ -14,10 +14,53 @@
   <!-- Main Content -->
   <div class="container">
     <div class="content">
-      <div class="clock">
-        <div id="time" class="time">00:00</div>
-        <div id="date" class="date">Loading...</div>
+      <!-- Clock removed - shortcuts island added at bottom -->
+    </div>
+  </div>
+
+  <!-- Shortcuts Island -->
+  <div id="shortcutsIsland" class="shortcuts-island">
+    <div id="shortcutsGrid" class="shortcuts-grid">
+      <!-- Shortcuts will be populated here -->
+    </div>
+    <button id="addShortcutBtn" class="add-shortcut-btn" aria-label="Add Shortcut" title="Add Shortcut">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Shortcut Modal -->
+  <div id="shortcutModal" class="shortcut-modal">
+    <div class="shortcut-modal-content">
+      <div class="shortcut-modal-header">
+        <h3 id="shortcutModalTitle">Add Shortcut</h3>
+        <button class="close-modal-btn" id="closeShortcutModal">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
       </div>
+      <form id="shortcutForm" class="shortcut-form">
+        <div class="form-group">
+          <label for="shortcutName">Name</label>
+          <input type="text" id="shortcutName" placeholder="e.g., Twitter" required>
+        </div>
+        <div class="form-group">
+          <label for="shortcutUrl">URL</label>
+          <input type="url" id="shortcutUrl" placeholder="https://example.com" required>
+        </div>
+        <div class="form-group">
+          <label for="shortcutIcon">Icon URL (optional)</label>
+          <input type="url" id="shortcutIcon" placeholder="https://example.com/favicon.ico">
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" id="cancelShortcut">Cancel</button>
+          <button type="submit" class="btn-primary">Save</button>
+        </div>
+      </form>
     </div>
   </div>
 
