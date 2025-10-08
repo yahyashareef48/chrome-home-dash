@@ -89,6 +89,7 @@ body {
   z-index: 100;
   transition: all 0.3s var(--transition-smooth);
   min-height: 80px;
+  max-width: calc(80vw - 4rem);
 }
 
 .shortcuts-island:hover {
@@ -100,11 +101,34 @@ body {
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  max-width: 100%;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+.shortcuts-grid::-webkit-scrollbar {
+  height: 6px;
+}
+
+.shortcuts-grid::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.shortcuts-grid::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.shortcuts-grid::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .shortcuts-grid:empty {
   display: none;
 }
+
 
 .shortcut-item {
   display: flex;
@@ -180,7 +204,63 @@ body {
   transform: scale(1.2);
 }
 
-.add-shortcut-btn {
+/* Search Bar */
+.search-bar-container {
+  position: absolute;
+  bottom: calc(100% + 1rem);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.4s var(--transition-smooth);
+  backdrop-filter: blur(40px) saturate(180%);
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  padding: 0;
+}
+
+.search-bar-container.active {
+  width: 500px;
+  max-width: calc(80vw - 4rem);
+  opacity: 1;
+  pointer-events: all;
+  padding: 1rem 1.5rem;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.75rem 1.25rem;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  font-size: 1rem;
+  transition: all 0.3s var(--transition-smooth);
+  outline: none;
+}
+
+.search-input:focus {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.1);
+}
+
+.search-input::placeholder {
+  color: var(--color-text-secondary);
+}
+
+/* Island Actions */
+.island-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.island-action-btn {
   width: 64px;
   height: 64px;
   border-radius: var(--radius-md);
@@ -195,15 +275,21 @@ body {
   flex-shrink: 0;
 }
 
-.add-shortcut-btn:hover {
+.island-action-btn:hover {
   transform: translateY(-4px) scale(1.05);
   background: rgba(255, 255, 255, 0.15);
   border-color: var(--color-primary);
   box-shadow: 0 8px 24px 0 rgba(0, 0, 0, 0.3);
 }
 
-.add-shortcut-btn:active {
+.island-action-btn:active {
   transform: translateY(-2px) scale(1.02);
+}
+
+.island-action-btn.active {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: var(--color-primary);
+  border-style: solid;
 }
 
 /* Shortcut Modal */
@@ -955,6 +1041,7 @@ body {
     transform: none;
     padding: 0.75rem 1rem;
     max-width: calc(100% - 2rem);
+    flex-wrap: wrap;
   }
 
   .shortcuts-grid {
@@ -991,9 +1078,14 @@ body {
     font-size: 0.65rem;
   }
 
-  .add-shortcut-btn {
+  .island-action-btn {
     width: 56px;
     height: 56px;
+  }
+
+  .search-bar-container.active {
+    width: calc(100vw - 4rem);
+    max-width: calc(100vw - 4rem);
   }
 
   .shortcut-modal-content {

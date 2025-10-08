@@ -733,6 +733,7 @@ class App {
   private unsplashImages: BackgroundImage[] = [];
   private customImages: BackgroundImage[] = [];
   private isLoadingUnsplash = false;
+  private isSearchActive = false;
 
   constructor() {
     this.themeManager = new ThemeManager();
@@ -748,9 +749,71 @@ class App {
     this.customImages = await ThemeStorage.getCustomImages();
 
     this.setupSettings();
+    this.setupSearch();
     this.renderBackgrounds();
     this.renderThemePresets();
     this.loadCurrentTheme();
+  }
+
+  setupSearch() {
+    const searchBtn = document.getElementById("searchBtn");
+    const searchContainer = document.getElementById("searchBarContainer");
+    const searchInput = document.getElementById("searchInput") as HTMLInputElement;
+    const island = document.getElementById("shortcutsIsland");
+
+    searchBtn?.addEventListener("click", () => {
+      this.isSearchActive = !this.isSearchActive;
+      searchContainer?.classList.toggle("active", this.isSearchActive);
+      searchBtn.classList.toggle("active", this.isSearchActive);
+      island?.classList.toggle("search-active", this.isSearchActive);
+
+      if (this.isSearchActive && searchInput) {
+        setTimeout(() => searchInput.focus(), 100);
+      }
+    });
+
+    searchInput?.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        const query = searchInput.value.trim();
+        if (query) {
+          this.performSearch(query);
+          searchInput.value = "";
+          this.closeSearch();
+        }
+      } else if (e.key === "Escape") {
+        this.closeSearch();
+      }
+    });
+
+    // Close search when clicking outside
+    document.addEventListener("click", (e) => {
+      const target = e.target as HTMLElement;
+      if (
+        this.isSearchActive &&
+        !searchContainer?.contains(target) &&
+        !searchBtn?.contains(target)
+      ) {
+        this.closeSearch();
+      }
+    });
+  }
+
+  performSearch(query: string) {
+    const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+    window.open(searchUrl, "_blank");
+  }
+
+  closeSearch() {
+    const searchContainer = document.getElementById("searchBarContainer");
+    const searchBtn = document.getElementById("searchBtn");
+    const searchInput = document.getElementById("searchInput") as HTMLInputElement;
+    const island = document.getElementById("shortcutsIsland");
+
+    this.isSearchActive = false;
+    searchContainer?.classList.remove("active");
+    searchBtn?.classList.remove("active");
+    island?.classList.remove("search-active");
+    if (searchInput) searchInput.value = "";
   }
 
   setupSettings() {
