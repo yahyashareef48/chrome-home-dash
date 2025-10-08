@@ -87,7 +87,6 @@ body {
   gap: 0;
   z-index: 100;
   max-width: 90vw;
-  overflow: visible;
 }
 
 .shortcuts-grid {
@@ -98,6 +97,8 @@ body {
   overflow-y: visible;
   scrollbar-width: none;
   -ms-overflow-style: none;
+  border-radius: 18px 0 0 18px;
+  overflow: hidden;
 }
 
 .shortcuts-grid::-webkit-scrollbar {
@@ -153,34 +154,49 @@ body {
   line-height: 1;
 }
 
-.shortcut-delete-btn {
-  position: absolute;
-  top: -6px;
-  right: -6px;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: #ff4757;
-  border: 2px solid white;
-  color: white;
-  font-size: 10px;
-  font-weight: bold;
-  line-height: 1;
-  display: none;
-  align-items: center;
-  justify-content: center;
+/* Context Menu */
+.shortcut-context-menu {
+  position: fixed;
+  background: rgba(28, 28, 30, 0.95);
+  backdrop-filter: blur(40px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 12px;
+  padding: 0.5rem 0;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  z-index: 10001;
+  min-width: 160px;
+  animation: contextMenuFadeIn 0.15s ease-out;
+}
+
+@keyframes contextMenuFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.context-menu-item {
+  padding: 0.75rem 1rem;
   cursor: pointer;
-  transition: all 0.15s var(--transition-smooth);
-  z-index: 10;
+  transition: background 0.2s ease;
+  color: var(--color-text);
+  font-size: 0.9rem;
 }
 
-.shortcut-item:hover .shortcut-delete-btn {
-  display: flex;
+.context-menu-item:hover {
+  background: rgba(255, 255, 255, 0.1);
 }
 
-.shortcut-delete-btn:hover {
-  transform: scale(1.1);
-  background: #ff3838;
+.context-menu-item:first-child {
+  border-radius: 12px 12px 0 0;
+}
+
+.context-menu-item:last-child {
+  border-radius: 0 0 12px 12px;
 }
 
 /* Search Bar */
@@ -238,6 +254,8 @@ body {
   gap: 0;
   flex-shrink: 0;
   border-left: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 0 18px 18px 0;
+  overflow: hidden;
 }
 
 .island-action-btn {

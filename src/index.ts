@@ -500,32 +500,81 @@ class ShortcutsManager {
       name.textContent = shortcut.name;
       name.title = shortcut.name;
 
-      // Create delete button
-      const deleteBtn = document.createElement("button");
-      deleteBtn.className = "shortcut-delete-btn";
-      deleteBtn.innerHTML = "×";
-      deleteBtn.title = "Delete shortcut";
-      deleteBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        this.deleteShortcut(shortcut.id);
-      });
-
       // Add click handler to open URL
       item.addEventListener("click", () => {
         window.open(shortcut.url, "_blank");
       });
 
-      // Right click to edit
+      // Right click context menu
       item.addEventListener("contextmenu", (e) => {
         e.preventDefault();
-        this.editShortcut(shortcut);
+        this.showContextMenu(e, shortcut);
       });
 
       item.appendChild(icon);
       item.appendChild(name);
-      item.appendChild(deleteBtn);
       this.gridElement?.appendChild(item);
     });
+  }
+
+  private showContextMenu(e: MouseEvent, shortcut: Shortcut): void {
+    // Remove any existing context menu
+    const existingMenu = document.querySelector(".shortcut-context-menu");
+    if (existingMenu) existingMenu.remove();
+
+    // Create context menu
+    const menu = document.createElement("div");
+    menu.className = "shortcut-context-menu";
+
+    // Edit option
+    const editOption = document.createElement("div");
+    editOption.className = "context-menu-item";
+    editOption.textContent = "Edit";
+    editOption.addEventListener("click", () => {
+      this.editShortcut(shortcut);
+      menu.remove();
+    });
+
+    // Delete option
+    const deleteOption = document.createElement("div");
+    deleteOption.className = "context-menu-item";
+    deleteOption.textContent = "Delete";
+    deleteOption.style.color = "#ff4757";
+    deleteOption.addEventListener("click", () => {
+      this.deleteShortcut(shortcut.id);
+      menu.remove();
+    });
+
+    menu.appendChild(editOption);
+    menu.appendChild(deleteOption);
+    document.body.appendChild(menu);
+
+    // Position menu (adjust if it goes off screen)
+    const menuRect = menu.getBoundingClientRect();
+    let left = e.clientX;
+    let top = e.clientY;
+
+    // Adjust if menu goes below viewport
+    if (top + menuRect.height > window.innerHeight) {
+      top = e.clientY - menuRect.height;
+    }
+
+    // Adjust if menu goes right of viewport
+    if (left + menuRect.width > window.innerWidth) {
+      left = e.clientX - menuRect.width;
+    }
+
+    menu.style.left = `${left}px`;
+    menu.style.top = `${top}px`;
+
+    // Close menu when clicking elsewhere
+    const closeMenu = (event: MouseEvent) => {
+      if (!menu.contains(event.target as Node)) {
+        menu.remove();
+        document.removeEventListener("click", closeMenu);
+      }
+    };
+    setTimeout(() => document.addEventListener("click", closeMenu), 0);
   }
 
   private getFaviconUrl(url: string): string {
