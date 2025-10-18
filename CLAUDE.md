@@ -21,8 +21,19 @@ A Chrome extension that enhances the new tab page by adding features on top of t
 
 ```
 chrome-home-dash/
-├── src/              # TypeScript source files
-├── public/           # Static assets (HTML, CSS, manifest)
+├── src/
+│   ├── types/        # Type definitions and interfaces
+│   ├── constants/    # App constants and defaults
+│   ├── services/     # Business logic services (storage, API)
+│   ├── managers/     # Feature managers (theme, shortcuts)
+│   ├── app.ts        # Main application class
+│   └── index.ts      # Entry point
+├── public/
+│   ├── styles/       # Modular CSS files by component
+│   ├── styles.css    # Main CSS (imports all modules)
+│   ├── index.html
+│   ├── manifest.json
+│   └── *.jpg         # Default backgrounds
 ├── dist/             # Built files (load this in Chrome)
 ├── package.json
 └── tsconfig.json
