@@ -9,8 +9,12 @@
   grid-template-columns: 1fr 1fr;
   gap: 20px;
   pointer-events: none;
-  opacity: 1;
+  opacity: 0;
   transition: opacity 0.3s var(--transition-smooth);
+}
+
+.content-sections.visible {
+  opacity: 1;
 }
 
 .content-sections.hidden {

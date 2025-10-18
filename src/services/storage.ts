@@ -7,6 +7,7 @@ export class ThemeStorage {
   private static UNSPLASH_IMAGES_KEY = "unsplashImages";
   private static CUSTOM_IMAGES_KEY = "customImages";
   private static SHORTCUTS_KEY = "shortcuts";
+  private static PANELS_VISIBLE_KEY = "panelsVisible";
 
   static async load(): Promise<ThemeConfig> {
     try {
@@ -183,6 +184,24 @@ export class ThemeStorage {
       await this.saveShortcuts(filteredShortcuts);
     } catch (error) {
       console.error("Error deleting shortcut:", error);
+    }
+  }
+
+  static async getPanelsVisible(): Promise<boolean> {
+    try {
+      const result = await chrome.storage.local.get(this.PANELS_VISIBLE_KEY);
+      return result[this.PANELS_VISIBLE_KEY] ?? true; // Default to visible
+    } catch (error) {
+      console.error("Error loading panels visibility:", error);
+      return true;
+    }
+  }
+
+  static async setPanelsVisible(visible: boolean): Promise<void> {
+    try {
+      await chrome.storage.local.set({ [this.PANELS_VISIBLE_KEY]: visible });
+    } catch (error) {
+      console.error("Error saving panels visibility:", error);
     }
   }
 }

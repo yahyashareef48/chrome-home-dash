@@ -36,7 +36,7 @@ export class App {
     this.setupSettings();
     this.setupSearch();
     this.setupTodos();
-    this.setupPanelsToggle();
+    await this.setupPanelsToggle();
     this.renderBackgrounds();
     this.renderThemePresets();
     this.loadCurrentTheme();
@@ -913,13 +913,38 @@ export class App {
     if (completedCount) completedCount.textContent = stats.completed.toString();
   }
 
-  setupPanelsToggle() {
+  async setupPanelsToggle() {
     const toggleBtn = document.getElementById("togglePanels");
     const contentSections = document.querySelector(".content-sections");
 
-    toggleBtn?.addEventListener("click", () => {
-      contentSections?.classList.toggle("hidden");
-      toggleBtn.classList.toggle("active");
+    // Restore saved state
+    const panelsVisible = await ThemeStorage.getPanelsVisible();
+    if (panelsVisible) {
+      contentSections?.classList.add("visible");
+      contentSections?.classList.remove("hidden");
+    } else {
+      contentSections?.classList.add("hidden");
+      contentSections?.classList.remove("visible");
+      toggleBtn?.classList.add("active");
+    }
+
+    // Toggle and save state
+    toggleBtn?.addEventListener("click", async () => {
+      const isCurrentlyVisible = contentSections?.classList.contains("visible");
+
+      if (isCurrentlyVisible) {
+        // Hide panels
+        contentSections?.classList.remove("visible");
+        contentSections?.classList.add("hidden");
+        toggleBtn.classList.add("active");
+        await ThemeStorage.setPanelsVisible(false);
+      } else {
+        // Show panels
+        contentSections?.classList.remove("hidden");
+        contentSections?.classList.add("visible");
+        toggleBtn.classList.remove("active");
+        await ThemeStorage.setPanelsVisible(true);
+      }
     });
   }
 }
