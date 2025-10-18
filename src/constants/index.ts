@@ -3,20 +3,20 @@ import type { BackgroundImage, Shortcut, ThemePreset, ThemeConfig } from "../typ
 export const DEFAULT_IMAGES: BackgroundImage[] = [
   {
     id: "bg-1",
-    url: "1.jpg",
-    name: "Earth from Space",
-    isCustom: false,
-  },
-  {
-    id: "bg-2",
     url: "2.jpg",
     name: "Mountain Range",
     isCustom: false,
   },
   {
+    id: "bg-2",
+    url: "a1148127791_10.jpg",
+    name: "Deer at Night",
+    isCustom: false,
+  },
+  {
     id: "bg-3",
-    url: "3.jpg",
-    name: "Viaduct Train",
+    url: "1.jpg",
+    name: "Earth from Space",
     isCustom: false,
   },
 ];
