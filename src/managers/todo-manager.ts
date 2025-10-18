@@ -115,12 +115,9 @@ export class TodoManager {
   }
 
   async clearOldCompleted(): Promise<number> {
-    const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
     const initialCount = this.todos.length;
 
-    this.todos = this.todos.filter(
-      (todo) => !todo.completed || todo.updatedAt > sevenDaysAgo
-    );
+    this.todos = this.todos.filter((todo) => !todo.completed);
 
     await this.saveTodos();
     return initialCount - this.todos.length;

@@ -709,12 +709,16 @@ export class App {
       });
     });
 
-    // Clear old completed
+    // Clear completed
     clearCompletedBtn?.addEventListener("click", async () => {
-      const count = await this.todoManager.clearOldCompleted();
-      if (count > 0) {
+      if (confirm("Clear all completed tasks?")) {
+        const count = await this.todoManager.clearOldCompleted();
         this.renderTodos();
         this.updateTodoStats();
+
+        if (count === 0) {
+          alert("No completed tasks to clear.");
+        }
       }
     });
   }
