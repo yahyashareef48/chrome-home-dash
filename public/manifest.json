@@ -3,6 +3,11 @@
   "name": "Chrome Home Dash",
   "version": "1.0.0",
   "description": "A beautiful iOS-inspired new tab experience with customizable themes and backgrounds",
+  "icons": {
+    "16": "icon.png",
+    "48": "icon.png",
+    "128": "icon.png"
+  },
   "chrome_url_overrides": {
     "newtab": "index.html"
   },
