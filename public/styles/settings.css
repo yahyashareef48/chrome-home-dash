@@ -31,6 +31,48 @@
   transform: scale(0.95) rotate(90deg);
 }
 
+/* Toggle Panels Button */
+
+.toggle-panels-btn {
+  position: fixed;
+  bottom: 2rem;
+  left: 2rem;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  backdrop-filter: blur(40px) saturate(180%);
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--color-text);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  transition: all 0.2s var(--transition-smooth);
+  z-index: 100;
+}
+
+.toggle-panels-btn:hover {
+  transform: scale(1.1);
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+}
+
+.toggle-panels-btn:active {
+  transform: scale(0.95);
+}
+
+.toggle-panels-btn.active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.toggle-panels-btn.active svg {
+  color: white;
+}
+
 /* Settings Panel */
 .settings-panel {
   position: fixed;
