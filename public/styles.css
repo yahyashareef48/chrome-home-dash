@@ -202,16 +202,16 @@ body {
 /* Search Bar */
 .search-bar-container {
   position: absolute;
-  bottom: calc(100% + 1rem);
+  bottom: calc(100% + 0.75rem);
   left: 50%;
   transform: translateX(-50%);
   width: 0;
   opacity: 0;
   pointer-events: none;
-  transition: all 0.4s var(--transition-smooth);
+  transition: all 0.3s var(--transition-smooth);
   backdrop-filter: blur(40px) saturate(180%);
   background: rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-lg);
+  border-radius: 18px;
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
   border: 1px solid rgba(255, 255, 255, 0.18);
   padding: 0;
@@ -219,32 +219,29 @@ body {
 
 .search-bar-container.active {
   width: 500px;
-  max-width: calc(80vw - 4rem);
+  max-width: calc(80vw);
   opacity: 1;
   pointer-events: all;
-  padding: 1rem 1.5rem;
+  padding: 0.875rem 1.25rem;
 }
 
 .search-input {
   width: 100%;
-  padding: 0.75rem 1.25rem;
-  background: rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: var(--radius-md);
+  padding: 0.75rem 1rem;
+  background: transparent;
+  border: none;
   color: var(--color-text);
   font-size: 1rem;
-  transition: all 0.3s var(--transition-smooth);
   outline: none;
 }
 
 .search-input:focus {
-  background: rgba(255, 255, 255, 0.2);
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.1);
+  background: transparent;
 }
 
 .search-input::placeholder {
   color: var(--color-text-secondary);
+  opacity: 0.7;
 }
 
 /* Island Actions */
