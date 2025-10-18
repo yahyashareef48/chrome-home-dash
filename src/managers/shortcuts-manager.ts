@@ -15,6 +15,33 @@ export class ShortcutsManager {
     this.formElement = document.getElementById("shortcutForm") as HTMLFormElement;
   }
 
+  private getColorForString(str: string): string {
+    // Generate a consistent color based on the string
+    const colors = [
+      "#FF6B6B", // Red
+      "#4ECDC4", // Teal
+      "#45B7D1", // Blue
+      "#FFA07A", // Light Salmon
+      "#98D8C8", // Mint
+      "#F7DC6F", // Yellow
+      "#BB8FCE", // Purple
+      "#85C1E2", // Sky Blue
+      "#F8B195", // Peach
+      "#F67280", // Pink
+      "#6C5CE7", // Purple Blue
+      "#00B894", // Green
+      "#FDCB6E", // Gold
+      "#E17055", // Terra Cotta
+      "#74B9FF", // Light Blue
+    ];
+
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return colors[Math.abs(hash) % colors.length];
+  }
+
   async init(): Promise<void> {
     this.shortcuts = await ThemeStorage.getShortcuts();
     this.render();
@@ -51,6 +78,7 @@ export class ShortcutsManager {
       const item = document.createElement("div");
       item.className = "shortcut-item";
       item.dataset.shortcutId = shortcut.id;
+      item.title = shortcut.name; // Tooltip on hover
 
       // Create icon
       const icon = document.createElement("img");
@@ -58,31 +86,25 @@ export class ShortcutsManager {
       icon.src = shortcut.icon || this.getFaviconUrl(shortcut.url);
       icon.alt = shortcut.name;
       icon.onerror = () => {
-        // Fallback to first letter if favicon fails
+        // Fallback to first letter with random color if favicon fails
         icon.style.display = "none";
         const fallback = document.createElement("div");
+        fallback.className = "shortcut-fallback-icon";
         fallback.style.cssText = `
-          width: 32px;
-          height: 32px;
-          background: var(--color-primary);
-          border-radius: 8px;
+          width: 44px;
+          height: 44px;
+          background: ${this.getColorForString(shortcut.name)};
+          border-radius: 10px;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 1.25rem;
+          font-size: 1.5rem;
           font-weight: 600;
           color: white;
-          margin-bottom: 0.25rem;
         `;
         fallback.textContent = shortcut.name.charAt(0).toUpperCase();
         item.insertBefore(fallback, icon);
       };
-
-      // Create name
-      const name = document.createElement("div");
-      name.className = "shortcut-name";
-      name.textContent = shortcut.name;
-      name.title = shortcut.name;
 
       // Add click handler to open URL
       item.addEventListener("click", () => {
@@ -96,7 +118,6 @@ export class ShortcutsManager {
       });
 
       item.appendChild(icon);
-      item.appendChild(name);
       this.gridElement?.appendChild(item);
     });
   }
