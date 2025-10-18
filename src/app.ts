@@ -643,11 +643,29 @@ export class App {
   setupTodos() {
     const todoInput = document.getElementById("todoInput") as HTMLInputElement;
     const addTodoBtn = document.getElementById("addTodoBtn");
+    const todoOptionsToggle = document.getElementById("todoOptionsToggle");
+    const todoOptions = document.getElementById("todoOptions");
     const todoDateInput = document.getElementById("todoDateInput") as HTMLInputElement;
     const todoRepeatSelect = document.getElementById("todoRepeatSelect") as HTMLSelectElement;
     const todoCustomDays = document.getElementById("todoCustomDays");
     const todoCustomDaysInput = document.getElementById("todoCustomDaysInput") as HTMLInputElement;
     const clearCompletedBtn = document.getElementById("clearCompletedBtn");
+
+    // Toggle options dropdown
+    todoOptionsToggle?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      todoOptions?.classList.toggle("visible");
+      todoOptionsToggle.classList.toggle("active");
+    });
+
+    // Close options when clicking outside
+    document.addEventListener("click", (e) => {
+      const target = e.target as HTMLElement;
+      if (!todoOptions?.contains(target) && !todoOptionsToggle?.contains(target)) {
+        todoOptions?.classList.remove("visible");
+        todoOptionsToggle?.classList.remove("active");
+      }
+    });
 
     // Show/hide custom days input
     todoRepeatSelect?.addEventListener("change", () => {
@@ -677,6 +695,15 @@ export class App {
 
         filterBtns.forEach((b) => b.classList.remove("active"));
         btn.classList.add("active");
+
+        // Show/hide clear button
+        if (clearCompletedBtn) {
+          if (filter === "completed") {
+            clearCompletedBtn.classList.add("visible");
+          } else {
+            clearCompletedBtn.classList.remove("visible");
+          }
+        }
 
         this.renderTodos();
       });
