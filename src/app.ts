@@ -36,6 +36,7 @@ export class App {
     this.setupSettings();
     this.setupSearch();
     this.setupTodos();
+    this.setupPanelsToggle();
     this.renderBackgrounds();
     this.renderThemePresets();
     this.loadCurrentTheme();
@@ -910,5 +911,15 @@ export class App {
     if (todayCount) todayCount.textContent = stats.today.toString();
     if (upcomingCount) upcomingCount.textContent = stats.upcoming.toString();
     if (completedCount) completedCount.textContent = stats.completed.toString();
+  }
+
+  setupPanelsToggle() {
+    const toggleBtn = document.getElementById("togglePanels");
+    const contentSections = document.querySelector(".content-sections");
+
+    toggleBtn?.addEventListener("click", () => {
+      contentSections?.classList.toggle("hidden");
+      toggleBtn.classList.toggle("active");
+    });
   }
 }
