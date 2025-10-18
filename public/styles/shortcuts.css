@@ -1,0 +1,129 @@
+/* Shortcuts Island */
+
+.shortcuts-island {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  backdrop-filter: blur(40px) saturate(180%);
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0;
+  border-radius: 18px;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  display: flex;
+  align-items: center;
+  gap: 0;
+  z-index: 100;
+  max-width: 90vw;
+}
+
+.shortcuts-grid {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  overflow-x: auto;
+  overflow-y: visible;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  border-radius: 18px 0 0 18px;
+  overflow: hidden;
+}
+
+.shortcuts-grid::-webkit-scrollbar {
+  display: none;
+}
+
+.shortcuts-grid:empty {
+  display: none;
+}
+
+.shortcut-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  margin: 0;
+  padding: 0.625rem;
+  width: 60px;
+  height: 60px;
+  border-radius: 0;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s var(--transition-smooth);
+  background: transparent;
+  flex-shrink: 0;
+}
+
+.shortcut-item:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.shortcut-item:active {
+  transform: scale(0.95);
+}
+
+.shortcut-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  object-fit: contain;
+}
+
+.shortcut-name {
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: var(--color-text);
+  text-align: center;
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1;
+}
+
+/* Context Menu */
+.shortcut-context-menu {
+  position: fixed;
+  background: rgba(28, 28, 30, 0.95);
+  backdrop-filter: blur(40px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 12px;
+  padding: 0.5rem 0;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  z-index: 10001;
+  min-width: 160px;
+  animation: contextMenuFadeIn 0.15s ease-out;
+}
+
+@keyframes contextMenuFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.context-menu-item {
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  color: var(--color-text);
+  font-size: 0.9rem;
+}
+
+.context-menu-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.context-menu-item:first-child {
+  border-radius: 12px 12px 0 0;
+}
+
+.context-menu-item:last-child {
+  border-radius: 0 0 12px 12px;
+}

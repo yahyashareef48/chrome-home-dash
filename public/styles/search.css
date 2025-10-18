@@ -1,0 +1,89 @@
+/* Search Bar */
+
+.search-bar-container {
+  position: absolute;
+  bottom: calc(100% + 0.75rem);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s var(--transition-smooth);
+  backdrop-filter: blur(40px) saturate(180%);
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  padding: 0;
+}
+
+.search-bar-container.active {
+  width: 500px;
+  max-width: calc(80vw);
+  opacity: 1;
+  pointer-events: all;
+  padding: 0.875rem 1.25rem;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: transparent;
+  border: none;
+  color: var(--color-text);
+  font-size: 1rem;
+  outline: none;
+}
+
+.search-input:focus {
+  background: transparent;
+}
+
+.search-input::placeholder {
+  color: var(--color-text-secondary);
+  opacity: 0.7;
+}
+
+/* Island Actions */
+.island-actions {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex-shrink: 0;
+  border-radius: 0 18px 18px 0;
+  overflow: hidden;
+}
+
+.island-action-btn {
+  width: 60px;
+  height: 60px;
+  margin: 0;
+  padding: 0.625rem;
+  border-radius: 0;
+  border: none;
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s var(--transition-smooth);
+  flex-shrink: 0;
+}
+
+.island-action-btn svg {
+  width: 22px;
+  height: 22px;
+}
+
+.island-action-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.island-action-btn:active {
+  transform: scale(0.95);
+}
+
+.island-action-btn.active {
+  background: rgba(255, 255, 255, 0.15);
+}
