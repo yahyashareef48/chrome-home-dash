@@ -14,7 +14,86 @@
   <!-- Main Content -->
   <div class="container">
     <div class="content">
-      <!-- Clock removed - shortcuts island added at bottom -->
+      <!-- Todo and Notes Sections -->
+      <div class="content-sections">
+        <!-- Todo Section -->
+        <div class="todo-section">
+          <div class="todo-header">
+            <h2>Today's Tasks</h2>
+            <div class="todo-stats">
+              <div class="todo-stat">
+                <span>Today:</span>
+                <span class="todo-stat-badge" id="todayCount">0</span>
+              </div>
+              <div class="todo-stat">
+                <span>Upcoming:</span>
+                <span class="todo-stat-badge" id="upcomingCount">0</span>
+              </div>
+              <div class="todo-stat">
+                <span>Completed:</span>
+                <span class="todo-stat-badge" id="completedCount">0</span>
+              </div>
+            </div>
+            <div class="todo-filters">
+              <button class="filter-btn active" data-filter="today">Today</button>
+              <button class="filter-btn" data-filter="upcoming">Upcoming</button>
+              <button class="filter-btn" data-filter="completed">Completed</button>
+            </div>
+          </div>
+
+          <div class="todo-input-container">
+            <div class="todo-input-wrapper">
+              <input type="text" id="todoInput" class="todo-input" placeholder="Add a new task...">
+              <button id="addTodoBtn" class="add-todo-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                Add
+              </button>
+            </div>
+            <div class="todo-options">
+              <input type="datetime-local" id="todoDateInput" class="todo-date-input">
+              <select id="todoRepeatSelect" class="todo-repeat-select">
+                <option value="none">No Repeat</option>
+                <option value="daily">Daily</option>
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
+                <option value="custom">Custom...</option>
+              </select>
+              <div class="todo-custom-days" id="todoCustomDays">
+                <span>Every</span>
+                <input type="number" id="todoCustomDaysInput" min="1" max="365" value="7">
+                <span>days</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="todo-list-container">
+            <div id="todoList" class="todo-list">
+              <!-- Todos will be rendered here -->
+            </div>
+          </div>
+
+          <div class="todo-footer">
+            <button id="clearCompletedBtn" class="clear-completed-btn">Clear Old Completed</button>
+          </div>
+        </div>
+
+        <!-- Notes Section (Placeholder) -->
+        <div class="notes-section">
+          <div class="notes-placeholder">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="12" y1="18" x2="12" y2="12"></line>
+              <line x1="9" y1="15" x2="15" y2="15"></line>
+            </svg>
+            <h3>Notes</h3>
+            <p>Coming Soon</p>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 

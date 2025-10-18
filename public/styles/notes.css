@@ -1,0 +1,39 @@
+/* Notes Section - Placeholder */
+.notes-section {
+  background: var(--color-background);
+  backdrop-filter: blur(var(--blur-amount));
+  -webkit-backdrop-filter: blur(var(--blur-amount));
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding: 40px;
+  text-align: center;
+}
+
+.notes-placeholder {
+  color: var(--color-text-secondary);
+}
+
+.notes-placeholder svg {
+  width: 80px;
+  height: 80px;
+  stroke: var(--color-text-secondary);
+  opacity: 0.2;
+  margin-bottom: 20px;
+}
+
+.notes-placeholder h3 {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: 8px;
+}
+
+.notes-placeholder p {
+  font-size: 15px;
+  color: var(--color-text-secondary);
+}

@@ -1,7 +1,8 @@
-import type { BackgroundImage, UnsplashPhoto } from "./types/index.js";
+import type { BackgroundImage, UnsplashPhoto, TodoItem, RepeatInterval, TodoFilter } from "./types/index.js";
 import { DEFAULT_IMAGES, THEME_PRESETS } from "./constants/index.js";
 import { ThemeManager } from "./managers/theme-manager.js";
 import { ShortcutsManager } from "./managers/shortcuts-manager.js";
+import { TodoManager } from "./managers/todo-manager.js";
 import { ThemeStorage } from "./services/storage.js";
 import { UnsplashAPI } from "./services/unsplash-api.js";
 
@@ -9,6 +10,7 @@ import { UnsplashAPI } from "./services/unsplash-api.js";
 export class App {
   private themeManager: ThemeManager;
   private shortcutsManager: ShortcutsManager;
+  private todoManager: TodoManager;
   private settingsPanel: HTMLElement | null;
   private isSettingsOpen = false;
   private unsplashImages: BackgroundImage[] = [];
@@ -19,6 +21,7 @@ export class App {
   constructor() {
     this.themeManager = new ThemeManager();
     this.shortcutsManager = new ShortcutsManager();
+    this.todoManager = new TodoManager();
     this.settingsPanel = document.getElementById("settingsPanel");
     this.init();
   }
@@ -26,14 +29,18 @@ export class App {
   async init() {
     await this.themeManager.init();
     await this.shortcutsManager.init();
+    await this.todoManager.init();
     this.unsplashImages = await ThemeStorage.getUnsplashImages();
     this.customImages = await ThemeStorage.getCustomImages();
 
     this.setupSettings();
     this.setupSearch();
+    this.setupTodos();
     this.renderBackgrounds();
     this.renderThemePresets();
     this.loadCurrentTheme();
+    this.renderTodos();
+    this.updateTodoStats();
   }
 
   setupSearch() {
@@ -631,5 +638,246 @@ export class App {
         overlay.remove();
       }
     });
+  }
+
+  setupTodos() {
+    const todoInput = document.getElementById("todoInput") as HTMLInputElement;
+    const addTodoBtn = document.getElementById("addTodoBtn");
+    const todoDateInput = document.getElementById("todoDateInput") as HTMLInputElement;
+    const todoRepeatSelect = document.getElementById("todoRepeatSelect") as HTMLSelectElement;
+    const todoCustomDays = document.getElementById("todoCustomDays");
+    const todoCustomDaysInput = document.getElementById("todoCustomDaysInput") as HTMLInputElement;
+    const clearCompletedBtn = document.getElementById("clearCompletedBtn");
+
+    // Show/hide custom days input
+    todoRepeatSelect?.addEventListener("change", () => {
+      if (todoRepeatSelect.value === "custom") {
+        todoCustomDays?.classList.add("visible");
+      } else {
+        todoCustomDays?.classList.remove("visible");
+      }
+    });
+
+    // Add todo on button click
+    addTodoBtn?.addEventListener("click", () => this.addTodo());
+
+    // Add todo on Enter key
+    todoInput?.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        this.addTodo();
+      }
+    });
+
+    // Filter buttons
+    const filterBtns = document.querySelectorAll(".filter-btn");
+    filterBtns.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const filter = (btn as HTMLElement).dataset.filter as TodoFilter;
+        this.todoManager.setFilter(filter);
+
+        filterBtns.forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+
+        this.renderTodos();
+      });
+    });
+
+    // Clear old completed
+    clearCompletedBtn?.addEventListener("click", async () => {
+      const count = await this.todoManager.clearOldCompleted();
+      if (count > 0) {
+        this.renderTodos();
+        this.updateTodoStats();
+      }
+    });
+  }
+
+  async addTodo() {
+    const todoInput = document.getElementById("todoInput") as HTMLInputElement;
+    const todoDateInput = document.getElementById("todoDateInput") as HTMLInputElement;
+    const todoRepeatSelect = document.getElementById("todoRepeatSelect") as HTMLSelectElement;
+    const todoCustomDaysInput = document.getElementById("todoCustomDaysInput") as HTMLInputElement;
+
+    const text = todoInput?.value.trim();
+    if (!text) return;
+
+    const dueDate = todoDateInput?.value ? new Date(todoDateInput.value).getTime() : undefined;
+    const repeatInterval = (todoRepeatSelect?.value as RepeatInterval) || "none";
+    const customRepeatDays =
+      repeatInterval === "custom" ? parseInt(todoCustomDaysInput?.value || "7") : undefined;
+
+    await this.todoManager.addTodo(text, dueDate, repeatInterval, customRepeatDays);
+
+    // Clear inputs
+    if (todoInput) todoInput.value = "";
+    if (todoDateInput) todoDateInput.value = "";
+    if (todoRepeatSelect) todoRepeatSelect.value = "none";
+    document.getElementById("todoCustomDays")?.classList.remove("visible");
+
+    this.renderTodos();
+    this.updateTodoStats();
+  }
+
+  renderTodos() {
+    const todoList = document.getElementById("todoList");
+    if (!todoList) return;
+
+    const todos = this.todoManager.getFilteredTodos();
+    todoList.innerHTML = "";
+
+    if (todos.length === 0) {
+      const currentFilter = this.todoManager.getCurrentFilter();
+      const emptyMessage =
+        currentFilter === "today"
+          ? "No tasks for today. Enjoy your day!"
+          : currentFilter === "upcoming"
+          ? "No upcoming tasks"
+          : "No completed tasks";
+
+      todoList.innerHTML = `
+        <div class="todo-empty">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="9 11 12 14 22 4"></polyline>
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+          </svg>
+          <p>${emptyMessage}</p>
+        </div>
+      `;
+      return;
+    }
+
+    todos.forEach((todo) => {
+      const todoItem = this.createTodoElement(todo);
+      todoList.appendChild(todoItem);
+    });
+  }
+
+  createTodoElement(todo: TodoItem): HTMLElement {
+    const todoItem = document.createElement("div");
+    todoItem.className = `todo-item${todo.completed ? " completed" : ""}`;
+    todoItem.dataset.todoId = todo.id;
+
+    // Checkbox
+    const checkbox = document.createElement("div");
+    checkbox.className = "todo-checkbox";
+    checkbox.innerHTML = `
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <polyline points="20 6 9 17 4 12"></polyline>
+      </svg>
+    `;
+
+    // Content
+    const content = document.createElement("div");
+    content.className = "todo-content";
+
+    const text = document.createElement("div");
+    text.className = "todo-text";
+    text.textContent = todo.text;
+
+    const meta = document.createElement("div");
+    meta.className = "todo-meta";
+
+    // Date badge
+    if (todo.dueDate) {
+      const dateBadge = this.createDateBadge(todo.dueDate);
+      meta.appendChild(dateBadge);
+    }
+
+    // Repeat indicator
+    if (todo.repeatInterval !== "none") {
+      const repeatBadge = document.createElement("span");
+      repeatBadge.className = "todo-repeat-indicator";
+      const repeatText =
+        todo.repeatInterval === "custom"
+          ? `Every ${todo.customRepeatDays} days`
+          : todo.repeatInterval.charAt(0).toUpperCase() + todo.repeatInterval.slice(1);
+      repeatBadge.innerHTML = `
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="23 4 23 10 17 10"></polyline>
+          <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+        </svg>
+        ${repeatText}
+      `;
+      meta.appendChild(repeatBadge);
+    }
+
+    content.appendChild(text);
+    if (meta.children.length > 0) {
+      content.appendChild(meta);
+    }
+
+    // Delete button
+    const deleteBtn = document.createElement("button");
+    deleteBtn.className = "todo-delete";
+    deleteBtn.innerHTML = `
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    `;
+    deleteBtn.addEventListener("click", async (e) => {
+      e.stopPropagation();
+      await this.todoManager.deleteTodo(todo.id);
+      this.renderTodos();
+      this.updateTodoStats();
+    });
+
+    // Toggle on click
+    todoItem.addEventListener("click", async (e) => {
+      if ((e.target as HTMLElement).closest(".todo-delete")) return;
+      await this.todoManager.toggleTodo(todo.id);
+      this.renderTodos();
+      this.updateTodoStats();
+    });
+
+    todoItem.appendChild(checkbox);
+    todoItem.appendChild(content);
+    todoItem.appendChild(deleteBtn);
+
+    return todoItem;
+  }
+
+  createDateBadge(dueDate: number): HTMLElement {
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    const todayEnd = todayStart + 24 * 60 * 60 * 1000;
+
+    const badge = document.createElement("span");
+    badge.className = "todo-date-badge";
+
+    const dueDateTime = new Date(dueDate);
+    const dateStr = dueDateTime.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    });
+    const timeStr = dueDateTime.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+    });
+
+    if (dueDate < todayStart) {
+      badge.classList.add("overdue");
+      badge.textContent = `Overdue: ${dateStr}`;
+    } else if (dueDate >= todayStart && dueDate < todayEnd) {
+      badge.classList.add("today");
+      badge.textContent = `Today: ${timeStr}`;
+    } else {
+      badge.classList.add("upcoming");
+      badge.textContent = dateStr;
+    }
+
+    return badge;
+  }
+
+  updateTodoStats() {
+    const stats = this.todoManager.getStats();
+
+    const todayCount = document.getElementById("todayCount");
+    const upcomingCount = document.getElementById("upcomingCount");
+    const completedCount = document.getElementById("completedCount");
+
+    if (todayCount) todayCount.textContent = stats.today.toString();
+    if (upcomingCount) upcomingCount.textContent = stats.upcoming.toString();
+    if (completedCount) completedCount.textContent = stats.completed.toString();
   }
 }

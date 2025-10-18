@@ -60,3 +60,19 @@ export interface ThemeConfig {
   blurIntensity: number;
   overlayOpacity: number;
 }
+
+export type RepeatInterval = "none" | "daily" | "weekly" | "monthly" | "custom";
+
+export interface TodoItem {
+  id: string;
+  text: string;
+  completed: boolean;
+  createdAt: number;
+  updatedAt: number;
+  dueDate?: number; // timestamp
+  repeatInterval: RepeatInterval;
+  customRepeatDays?: number; // for custom repeat interval
+  lastCompletedDate?: number; // timestamp of last completion for repeating todos
+}
+
+export type TodoFilter = "today" | "upcoming" | "completed";
