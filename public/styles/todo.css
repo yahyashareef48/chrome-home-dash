@@ -198,10 +198,16 @@
   transition: all 0.2s var(--transition-smooth);
   cursor: pointer;
   flex-shrink: 0;
+  width: 100%;
 }
 
 .todo-date-input {
   color-scheme: dark;
+}
+
+.todo-date-input::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
 }
 
 .todo-date-input:focus,
@@ -211,29 +217,43 @@
   background: rgba(255, 255, 255, 0.12);
 }
 
+.todo-repeat-select option {
+  background: #1c1c1e;
+  color: var(--color-text);
+  padding: 8px;
+}
+
 .todo-custom-days {
   display: none;
   align-items: center;
   gap: 6px;
+  margin-top: 6px;
 }
 
 .todo-custom-days.visible {
-  display: inline-flex;
+  display: flex;
 }
 
 .todo-custom-days input {
-  width: 50px;
+  width: 60px;
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 8px;
-  padding: 7px 8px;
+  padding: 7px 10px;
   color: var(--color-text);
   font-size: 12px;
+  text-align: center;
+}
+
+.todo-custom-days input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  background: rgba(255, 255, 255, 0.12);
 }
 
 .todo-custom-days span {
-  font-size: 11px;
-  color: var(--color-text-secondary);
+  font-size: 12px;
+  color: var(--color-text);
 }
 
 .add-todo-btn {
@@ -272,18 +292,18 @@
   position: absolute;
   top: calc(100% + 6px);
   right: 0;
-  background: rgba(28, 28, 30, 0.95);
+  background: rgba(28, 28, 30, 0.98);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 10px;
-  padding: 10px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  padding: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
   display: none;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
   z-index: 100;
-  min-width: 200px;
+  min-width: 220px;
 }
 
 .todo-options.visible {
@@ -297,11 +317,12 @@
 }
 
 .todo-option-label {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--color-text-secondary);
-  font-weight: 500;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.8px;
+  margin-bottom: 2px;
 }
 
 /* Todo List */
