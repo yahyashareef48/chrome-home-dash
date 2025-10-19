@@ -42,7 +42,6 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  margin-top: 0.75rem;
   transition: all 0.2s var(--transition-smooth);
 }
 

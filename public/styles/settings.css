@@ -365,3 +365,8 @@
 .slider::-moz-range-thumb:hover {
   transform: scale(1.2);
 }
+
+#browseUnsplash,
+#addCustomBg {
+  margin-bottom: 0.75rem;
+}
