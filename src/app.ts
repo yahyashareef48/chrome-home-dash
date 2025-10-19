@@ -6,8 +6,10 @@ import { TodoManager } from "./managers/todo-manager.js";
 import { NotesManager } from "./managers/notes-manager.js";
 import { ThemeStorage } from "./services/storage.js";
 import { UnsplashAPI } from "./services/unsplash-api.js";
-import { marked } from "marked";
-import DOMPurify from "dompurify";
+
+// marked and DOMPurify are loaded as global scripts from libs folder
+declare const marked: { parse: (markdown: string) => string };
+declare const DOMPurify: { sanitize: (html: string) => string };
 
 // Main App
 export class App {
@@ -1273,7 +1275,12 @@ export class App {
     if (!markdown.trim()) return "";
 
     try {
-      const rawHtml = marked.parse(markdown) as string;
+      if (typeof marked === "undefined" || typeof DOMPurify === "undefined") {
+        console.error("Markdown libraries not loaded");
+        return markdown.replace(/\n/g, "<br>");
+      }
+
+      const rawHtml = marked.parse(markdown);
       return DOMPurify.sanitize(rawHtml);
     } catch (error) {
       console.error("Error rendering markdown:", error);
