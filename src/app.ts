@@ -1236,6 +1236,13 @@ export class App {
 
     const noteModalTitle = document.getElementById("noteModalTitle") as HTMLInputElement;
     const noteModalContent = document.getElementById("noteModalContent") as HTMLTextAreaElement;
+    const noteModalHeaderTitle = document.getElementById("noteModalHeaderTitle");
+    const viewTab = document.getElementById("viewTab");
+    const editTab = document.getElementById("editTab");
+    const noteViewMode = document.getElementById("noteViewMode");
+    const noteEditMode = document.getElementById("noteEditMode");
+    const noteViewContent = document.getElementById("noteViewContent");
+    const saveNoteEdit = document.getElementById("saveNoteEdit");
 
     const title = noteModalTitle?.value.trim() || "Untitled";
     const content = noteModalContent?.value.trim();
@@ -1246,7 +1253,19 @@ export class App {
     }
 
     await this.notesManager.updateNote(this.currentEditingNoteId, title, content);
-    this.closeNoteModal();
+
+    // Update the view mode with new content
+    if (noteModalHeaderTitle) noteModalHeaderTitle.textContent = title;
+    if (noteViewContent) noteViewContent.innerHTML = this.renderMarkdown(content);
+
+    // Switch to view mode instead of closing
+    viewTab?.classList.add("active");
+    editTab?.classList.remove("active");
+    noteViewMode?.classList.add("active");
+    noteEditMode?.classList.remove("active");
+    saveNoteEdit?.classList.add("hidden");
+
+    // Update the notes grid
     this.renderNotes();
   }
 
