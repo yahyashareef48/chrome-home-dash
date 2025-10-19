@@ -8,6 +8,7 @@ export class ThemeStorage {
   private static CUSTOM_IMAGES_KEY = "customImages";
   private static SHORTCUTS_KEY = "shortcuts";
   private static PANELS_VISIBLE_KEY = "panelsVisible";
+  private static NOTES_KEY = "notes";
 
   static async load(): Promise<ThemeConfig> {
     try {
@@ -202,6 +203,24 @@ export class ThemeStorage {
       await chrome.storage.local.set({ [this.PANELS_VISIBLE_KEY]: visible });
     } catch (error) {
       console.error("Error saving panels visibility:", error);
+    }
+  }
+
+  static async getNotes(): Promise<any[]> {
+    try {
+      const result = await chrome.storage.local.get(this.NOTES_KEY);
+      return result[this.NOTES_KEY] || [];
+    } catch (error) {
+      console.error("Error loading notes:", error);
+      return [];
+    }
+  }
+
+  static async saveNotes(notes: any[]): Promise<void> {
+    try {
+      await chrome.storage.local.set({ [this.NOTES_KEY]: notes });
+    } catch (error) {
+      console.error("Error saving notes:", error);
     }
   }
 }

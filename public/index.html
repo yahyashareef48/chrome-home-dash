@@ -92,17 +92,33 @@
 
         </div>
 
-        <!-- Notes Section (Placeholder) -->
+        <!-- Notes Section -->
         <div class="notes-section">
-          <div class="notes-placeholder">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-              <polyline points="14 2 14 8 20 8"></polyline>
-              <line x1="12" y1="18" x2="12" y2="12"></line>
-              <line x1="9" y1="15" x2="15" y2="15"></line>
-            </svg>
-            <h3>Notes</h3>
-            <p>Coming Soon</p>
+          <!-- Notes Header -->
+          <div class="notes-header">
+            <h2>Notes</h2>
+          </div>
+
+          <!-- Expandable Note Input -->
+          <div class="note-input-container" id="noteInputContainer">
+            <div class="note-input-placeholder" id="noteInputPlaceholder">
+              Take a note...
+            </div>
+            <div class="note-input-expanded" id="noteInputExpanded">
+              <input type="text" id="noteTitleInput" class="note-title-input" placeholder="Title">
+              <textarea id="noteContentInput" class="note-content-input" placeholder="Note content... (Markdown supported)"></textarea>
+              <div class="note-input-actions">
+                <button id="closeNoteInput" class="btn-secondary-small">Close</button>
+                <button id="saveNoteBtn" class="btn-primary-small">Save</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Notes Grid -->
+          <div class="notes-list-container">
+            <div id="notesList" class="notes-grid">
+              <!-- Notes will be rendered here -->
+            </div>
           </div>
         </div>
       </div>
@@ -259,6 +275,49 @@
       <!-- Reset Section -->
       <div class="settings-section">
         <button id="resetTheme" class="btn-danger">Reset to Default</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Note Edit Modal -->
+  <div id="noteModal" class="note-modal">
+    <div class="note-modal-content">
+      <div class="note-modal-header">
+        <h3 id="noteModalHeaderTitle">Note Title</h3>
+        <button class="close-modal-btn" id="closeNoteModal">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="note-modal-body">
+        <!-- View Mode -->
+        <div class="note-view-mode active" id="noteViewMode">
+          <div class="note-view-content" id="noteViewContent"></div>
+        </div>
+        <!-- Edit Mode -->
+        <div class="note-edit-mode" id="noteEditMode">
+          <div class="note-modal-edit-section">
+            <input type="text" id="noteModalTitle" class="note-modal-title-input" placeholder="Title">
+            <textarea id="noteModalContent" class="note-modal-content-input" placeholder="Note content... (Markdown supported)"></textarea>
+          </div>
+          <div class="note-modal-preview-section">
+            <div class="note-preview-header">Preview</div>
+            <div id="noteModalPreview" class="note-modal-preview"></div>
+          </div>
+        </div>
+      </div>
+      <div class="note-modal-footer">
+        <div class="note-modal-tabs">
+          <button class="note-tab active" data-tab="view" id="viewTab">View</button>
+          <button class="note-tab" data-tab="edit" id="editTab">Edit</button>
+        </div>
+        <div class="note-modal-actions">
+          <button id="deleteNoteBtn" class="btn-danger-small">Delete</button>
+          <button id="cancelNoteEdit" class="btn-secondary">Close</button>
+          <button id="saveNoteEdit" class="btn-primary">Save</button>
+        </div>
       </div>
     </div>
   </div>

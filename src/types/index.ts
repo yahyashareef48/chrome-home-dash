@@ -76,3 +76,11 @@ export interface TodoItem {
 }
 
 export type TodoFilter = "today" | "upcoming" | "completed";
+
+export interface Note {
+  id: string;
+  title: string;
+  content: string; // Raw markdown content
+  createdAt: number;
+  updatedAt: number;
+}

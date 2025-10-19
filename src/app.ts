@@ -1,27 +1,34 @@
-import type { BackgroundImage, UnsplashPhoto, TodoItem, RepeatInterval, TodoFilter } from "./types/index.js";
+import type { BackgroundImage, UnsplashPhoto, TodoItem, RepeatInterval, TodoFilter, Note } from "./types/index.js";
 import { DEFAULT_IMAGES, THEME_PRESETS } from "./constants/index.js";
 import { ThemeManager } from "./managers/theme-manager.js";
 import { ShortcutsManager } from "./managers/shortcuts-manager.js";
 import { TodoManager } from "./managers/todo-manager.js";
+import { NotesManager } from "./managers/notes-manager.js";
 import { ThemeStorage } from "./services/storage.js";
 import { UnsplashAPI } from "./services/unsplash-api.js";
+import { marked } from "marked";
+import DOMPurify from "dompurify";
 
 // Main App
 export class App {
   private themeManager: ThemeManager;
   private shortcutsManager: ShortcutsManager;
   private todoManager: TodoManager;
+  private notesManager: NotesManager;
   private settingsPanel: HTMLElement | null;
   private isSettingsOpen = false;
   private unsplashImages: BackgroundImage[] = [];
   private customImages: BackgroundImage[] = [];
   private isLoadingUnsplash = false;
   private isSearchActive = false;
+  private isNoteInputExpanded = false;
+  private currentEditingNoteId: string | null = null;
 
   constructor() {
     this.themeManager = new ThemeManager();
     this.shortcutsManager = new ShortcutsManager();
     this.todoManager = new TodoManager();
+    this.notesManager = new NotesManager();
     this.settingsPanel = document.getElementById("settingsPanel");
     this.init();
   }
@@ -30,18 +37,21 @@ export class App {
     await this.themeManager.init();
     await this.shortcutsManager.init();
     await this.todoManager.init();
+    await this.notesManager.init();
     this.unsplashImages = await ThemeStorage.getUnsplashImages();
     this.customImages = await ThemeStorage.getCustomImages();
 
     this.setupSettings();
     this.setupSearch();
     this.setupTodos();
+    this.setupNotes();
     await this.setupPanelsToggle();
     this.renderBackgrounds();
     this.renderThemePresets();
     this.loadCurrentTheme();
     this.renderTodos();
     this.updateTodoStats();
+    this.renderNotes();
   }
 
   setupSearch() {
@@ -946,5 +956,344 @@ export class App {
         await ThemeStorage.setPanelsVisible(true);
       }
     });
+  }
+
+  setupNotes() {
+    const noteInputPlaceholder = document.getElementById("noteInputPlaceholder");
+    const noteInputExpanded = document.getElementById("noteInputExpanded");
+    const noteTitleInput = document.getElementById("noteTitleInput") as HTMLInputElement;
+    const noteContentInput = document.getElementById("noteContentInput") as HTMLTextAreaElement;
+    const closeNoteInput = document.getElementById("closeNoteInput");
+    const saveNoteBtn = document.getElementById("saveNoteBtn");
+
+    // Modal elements
+    const noteModal = document.getElementById("noteModal");
+    const closeNoteModal = document.getElementById("closeNoteModal");
+    const viewTab = document.getElementById("viewTab");
+    const editTab = document.getElementById("editTab");
+    const noteViewMode = document.getElementById("noteViewMode");
+    const noteEditMode = document.getElementById("noteEditMode");
+    const noteModalTitle = document.getElementById("noteModalTitle") as HTMLInputElement;
+    const noteModalContent = document.getElementById("noteModalContent") as HTMLTextAreaElement;
+    const noteModalPreview = document.getElementById("noteModalPreview");
+    const saveNoteEdit = document.getElementById("saveNoteEdit");
+    const cancelNoteEdit = document.getElementById("cancelNoteEdit");
+    const deleteNoteBtn = document.getElementById("deleteNoteBtn");
+
+    // Expand input on click
+    noteInputPlaceholder?.addEventListener("click", () => {
+      this.isNoteInputExpanded = true;
+      noteInputPlaceholder.classList.add("hidden");
+      noteInputExpanded?.classList.add("active");
+      setTimeout(() => noteTitleInput?.focus(), 100);
+    });
+
+    // Close expanded input
+    closeNoteInput?.addEventListener("click", () => {
+      this.closeNoteInput();
+    });
+
+    // Save note
+    saveNoteBtn?.addEventListener("click", async () => {
+      await this.saveNote();
+    });
+
+    // Save on Ctrl+Enter in content textarea
+    noteContentInput?.addEventListener("keydown", async (e) => {
+      if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+        await this.saveNote();
+      }
+    });
+
+    // Modal: Close on backdrop click
+    noteModal?.addEventListener("click", (e) => {
+      if (e.target === noteModal) {
+        this.closeNoteModal();
+      }
+    });
+
+    // Modal: Close button
+    closeNoteModal?.addEventListener("click", () => {
+      this.closeNoteModal();
+    });
+
+    // Modal: Cancel button
+    cancelNoteEdit?.addEventListener("click", () => {
+      this.closeNoteModal();
+    });
+
+    // Modal: Save button
+    saveNoteEdit?.addEventListener("click", async () => {
+      await this.saveNoteEdit();
+    });
+
+    // Modal: Delete button
+    deleteNoteBtn?.addEventListener("click", async () => {
+      if (this.currentEditingNoteId && confirm("Delete this note?")) {
+        await this.deleteNote(this.currentEditingNoteId);
+        this.closeNoteModal();
+      }
+    });
+
+    // Modal: Update preview on content change
+    noteModalContent?.addEventListener("input", () => {
+      this.updateNotePreview();
+    });
+
+    // Modal: Tab switching
+    viewTab?.addEventListener("click", () => {
+      viewTab.classList.add("active");
+      editTab?.classList.remove("active");
+      noteViewMode?.classList.add("active");
+      noteEditMode?.classList.remove("active");
+      // Hide save button in view mode
+      saveNoteEdit?.classList.add("hidden");
+    });
+
+    editTab?.addEventListener("click", () => {
+      editTab.classList.add("active");
+      viewTab?.classList.remove("active");
+      noteEditMode?.classList.add("active");
+      noteViewMode?.classList.remove("active");
+      // Show save button in edit mode
+      saveNoteEdit?.classList.remove("hidden");
+      this.updateNotePreview(); // Update preview when switching to edit
+    });
+
+    // Modal: Close on Escape
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        if (noteModal?.classList.contains("open")) {
+          this.closeNoteModal();
+        } else if (this.isNoteInputExpanded) {
+          this.closeNoteInput();
+        }
+      }
+    });
+  }
+
+  closeNoteInput() {
+    const noteInputPlaceholder = document.getElementById("noteInputPlaceholder");
+    const noteInputExpanded = document.getElementById("noteInputExpanded");
+    const noteTitleInput = document.getElementById("noteTitleInput") as HTMLInputElement;
+    const noteContentInput = document.getElementById("noteContentInput") as HTMLTextAreaElement;
+
+    this.isNoteInputExpanded = false;
+    noteInputExpanded?.classList.remove("active");
+    noteInputPlaceholder?.classList.remove("hidden");
+
+    // Clear inputs
+    if (noteTitleInput) noteTitleInput.value = "";
+    if (noteContentInput) noteContentInput.value = "";
+  }
+
+  async saveNote() {
+    const noteTitleInput = document.getElementById("noteTitleInput") as HTMLInputElement;
+    const noteContentInput = document.getElementById("noteContentInput") as HTMLTextAreaElement;
+
+    const title = noteTitleInput?.value.trim() || "Untitled";
+    const content = noteContentInput?.value.trim();
+
+    if (!content) {
+      alert("Please enter some content for your note.");
+      return;
+    }
+
+    await this.notesManager.addNote(title, content);
+    this.closeNoteInput();
+    this.renderNotes();
+  }
+
+  renderNotes() {
+    const notesList = document.getElementById("notesList");
+    if (!notesList) return;
+
+    const notes = this.notesManager.getNotes();
+    notesList.innerHTML = "";
+
+    if (notes.length === 0) {
+      notesList.innerHTML = `
+        <div class="notes-empty">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="12" y1="18" x2="12" y2="12"></line>
+            <line x1="9" y1="15" x2="15" y2="15"></line>
+          </svg>
+          <p>No notes yet. Create your first note!</p>
+        </div>
+      `;
+      return;
+    }
+
+    notes.forEach((note) => {
+      const noteCard = this.createNoteCard(note);
+      notesList.appendChild(noteCard);
+    });
+  }
+
+  createNoteCard(note: Note): HTMLElement {
+    const card = document.createElement("div");
+    card.className = "note-card";
+    card.dataset.noteId = note.id;
+
+    // Title
+    const title = document.createElement("div");
+    title.className = "note-card-title";
+    title.textContent = note.title || "Untitled";
+
+    // Content preview (rendered markdown)
+    const content = document.createElement("div");
+    content.className = "note-card-content";
+    const renderedMarkdown = this.renderMarkdown(note.content);
+    content.innerHTML = renderedMarkdown;
+
+    // Timestamp
+    const timestamp = document.createElement("div");
+    timestamp.className = "note-card-timestamp";
+    const date = new Date(note.updatedAt);
+    timestamp.textContent = `Updated ${this.formatDate(date)}`;
+
+    // Delete button
+    const deleteBtn = document.createElement("button");
+    deleteBtn.className = "note-card-delete";
+    deleteBtn.innerHTML = `
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    `;
+    deleteBtn.addEventListener("click", async (e) => {
+      e.stopPropagation();
+      if (confirm("Delete this note?")) {
+        await this.deleteNote(note.id);
+      }
+    });
+
+    // Click to edit
+    card.addEventListener("click", (e) => {
+      if (!(e.target as HTMLElement).closest(".note-card-delete")) {
+        this.openNoteModal(note.id);
+      }
+    });
+
+    card.appendChild(title);
+    card.appendChild(content);
+    card.appendChild(timestamp);
+    card.appendChild(deleteBtn);
+
+    return card;
+  }
+
+  openNoteModal(noteId: string) {
+    const note = this.notesManager.getNote(noteId);
+    if (!note) return;
+
+    this.currentEditingNoteId = noteId;
+
+    const noteModal = document.getElementById("noteModal");
+    const noteModalHeaderTitle = document.getElementById("noteModalHeaderTitle");
+    const viewTab = document.getElementById("viewTab");
+    const editTab = document.getElementById("editTab");
+    const noteViewMode = document.getElementById("noteViewMode");
+    const noteEditMode = document.getElementById("noteEditMode");
+    const noteViewContent = document.getElementById("noteViewContent");
+    const noteModalTitle = document.getElementById("noteModalTitle") as HTMLInputElement;
+    const noteModalContent = document.getElementById("noteModalContent") as HTMLTextAreaElement;
+    const saveNoteEdit = document.getElementById("saveNoteEdit");
+
+    // Set header title
+    if (noteModalHeaderTitle) noteModalHeaderTitle.textContent = note.title;
+
+    // Set view mode content
+    if (noteViewContent) noteViewContent.innerHTML = this.renderMarkdown(note.content);
+
+    // Set edit mode content
+    if (noteModalTitle) noteModalTitle.value = note.title;
+    if (noteModalContent) noteModalContent.value = note.content;
+
+    // Default to view mode
+    viewTab?.classList.add("active");
+    editTab?.classList.remove("active");
+    noteViewMode?.classList.add("active");
+    noteEditMode?.classList.remove("active");
+    saveNoteEdit?.classList.add("hidden"); // Hide save button in view mode
+
+    this.updateNotePreview();
+    noteModal?.classList.add("open");
+  }
+
+  closeNoteModal() {
+    const noteModal = document.getElementById("noteModal");
+    noteModal?.classList.remove("open");
+    this.currentEditingNoteId = null;
+  }
+
+  async saveNoteEdit() {
+    if (!this.currentEditingNoteId) return;
+
+    const noteModalTitle = document.getElementById("noteModalTitle") as HTMLInputElement;
+    const noteModalContent = document.getElementById("noteModalContent") as HTMLTextAreaElement;
+
+    const title = noteModalTitle?.value.trim() || "Untitled";
+    const content = noteModalContent?.value.trim();
+
+    if (!content) {
+      alert("Please enter some content for your note.");
+      return;
+    }
+
+    await this.notesManager.updateNote(this.currentEditingNoteId, title, content);
+    this.closeNoteModal();
+    this.renderNotes();
+  }
+
+  async deleteNote(noteId: string) {
+    const card = document.querySelector(`[data-note-id="${noteId}"]`);
+    card?.classList.add("deleting");
+
+    setTimeout(async () => {
+      await this.notesManager.deleteNote(noteId);
+      this.renderNotes();
+    }, 200);
+  }
+
+  updateNotePreview() {
+    const noteModalContent = document.getElementById("noteModalContent") as HTMLTextAreaElement;
+    const noteModalPreview = document.getElementById("noteModalPreview");
+
+    if (!noteModalContent || !noteModalPreview) return;
+
+    const markdown = noteModalContent.value;
+    const rendered = this.renderMarkdown(markdown);
+    noteModalPreview.innerHTML = rendered || '<p style="color: var(--color-text-secondary); font-style: italic;">Preview will appear here...</p>';
+  }
+
+  renderMarkdown(markdown: string): string {
+    if (!markdown.trim()) return "";
+
+    try {
+      const rawHtml = marked.parse(markdown) as string;
+      return DOMPurify.sanitize(rawHtml);
+    } catch (error) {
+      console.error("Error rendering markdown:", error);
+      // Return markdown with basic line breaks as fallback
+      return markdown.replace(/\n/g, "<br>");
+    }
+  }
+
+  formatDate(date: Date): string {
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return "just now";
+    if (diffMins < 60) return `${diffMins} min${diffMins !== 1 ? "s" : ""} ago`;
+    if (diffHours < 24) return `${diffHours} hour${diffHours !== 1 ? "s" : ""} ago`;
+    if (diffDays < 7) return `${diffDays} day${diffDays !== 1 ? "s" : ""} ago`;
+
+    return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
   }
 }
