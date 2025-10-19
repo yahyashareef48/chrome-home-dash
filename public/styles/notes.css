@@ -136,6 +136,7 @@
   flex: 1;
   overflow-y: auto;
   padding: 16px 18px;
+  position: relative;
 }
 
 .notes-grid {
@@ -143,6 +144,7 @@
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 12px;
   align-items: start;
+  min-height: 100%;
 }
 
 /* Note Card */
@@ -286,6 +288,11 @@
 
 /* Empty State */
 .notes-empty {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
