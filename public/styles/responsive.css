@@ -55,11 +55,6 @@
     height: 56px;
   }
 
-  .search-bar-container.active {
-    width: calc(100vw - 4rem);
-    max-width: calc(100vw - 4rem);
-  }
-
   .shortcut-modal-content {
     width: 100%;
     max-width: 100%;
