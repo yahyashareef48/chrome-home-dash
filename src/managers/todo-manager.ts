@@ -124,22 +124,21 @@ export class TodoManager {
   }
 
   private generateNextOccurrence(todo: TodoItem): TodoItem | null {
-    if (!todo.dueDate) return null;
-
+    // Calculate next due date from current time (when the todo is completed)
+    const now = new Date();
     let nextDueDate: number;
-    const currentDue = new Date(todo.dueDate);
 
     switch (todo.repeatInterval) {
       case "daily":
-        nextDueDate = new Date(currentDue.getTime() + 24 * 60 * 60 * 1000).getTime();
+        nextDueDate = new Date(now.getTime() + 24 * 60 * 60 * 1000).getTime();
         break;
 
       case "weekly":
-        nextDueDate = new Date(currentDue.getTime() + 7 * 24 * 60 * 60 * 1000).getTime();
+        nextDueDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).getTime();
         break;
 
       case "monthly":
-        const nextMonth = new Date(currentDue);
+        const nextMonth = new Date(now);
         nextMonth.setMonth(nextMonth.getMonth() + 1);
         nextDueDate = nextMonth.getTime();
         break;
@@ -147,7 +146,7 @@ export class TodoManager {
       case "custom":
         if (!todo.customRepeatDays) return null;
         nextDueDate = new Date(
-          currentDue.getTime() + todo.customRepeatDays * 24 * 60 * 60 * 1000
+          now.getTime() + todo.customRepeatDays * 24 * 60 * 60 * 1000
         ).getTime();
         break;
 
